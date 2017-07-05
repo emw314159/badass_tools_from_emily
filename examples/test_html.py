@@ -12,7 +12,7 @@ def main():
     # load data frame and start and HTML file
     #
     df = pd.read_csv('data/dataframe.csv')
-    f = open('output/test_df.html', 'w')
+    f = open('output/test_html_example_output.html', 'w')
     ht.start_HTML(f, 'Emily\'s HTML Automation Examples')
 
 
