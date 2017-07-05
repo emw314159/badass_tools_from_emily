@@ -1,0 +1,305 @@
+<html>
+<head>
+<title>Emily's HTML Automation Examples</title>
+</head>
+<body>
+<h1>Pandas Dataframe to HTML Table Example:</h1><style>
+.emily-df-table, .emily-df-th, .emily-df-td {
+  border: 1px solid black;
+}
+.emily-df-table {
+  border-collapse: collapse;
+}
+.emily-df-th, .emily-df-td {
+  text-align: center;  padding-left: 25px;
+  padding-right: 25px;
+}
+.emily-df-th {
+  background-color: #A4A4A4;
+}
+.emily-df-even {
+  background-color: FFB6C1;
+}
+.emily-df-odd {
+  background-color: #E6E6FA;
+}
+.emily-df-monospace {
+  font-family: monospace;
+}
+</style>
+<table class="emily-df-table">
+<tr class="emily-df-row"><th class="emily-df-th">sequence(target+3'+5')</th><th class="emily-df-th">log2 fold change, KBM7</th><th class="emily-df-th">seed</th><th class="emily-df-th">motif_scores</th><th class="emily-df-th">motif_scores_seed</th><th class="emily-df-th">regression_score</th>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">GACTTTGGGTACGGCTTGTTCTTACAATACCGGTAACTGC</td>
+<td class="emily-df-td">-2.683</td>
+<td class="emily-df-td emily-df-monospace">TACAATAC</td>
+<td class="emily-df-td">-0.919</td>
+<td class="emily-df-td">0.532</td>
+<td class="emily-df-td">0.461</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">GACACCTCGGCAGAAGCGAGACTTTGGGTACGGCTTGTTC</td>
+<td class="emily-df-td">-3.912</td>
+<td class="emily-df-td emily-df-monospace">TTTGGGTA</td>
+<td class="emily-df-td">0.504</td>
+<td class="emily-df-td">-1.156</td>
+<td class="emily-df-td">0.519</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">GGGCTCTTCCACTACTTACCAGGGACACCTCGGCAGAAGC</td>
+<td class="emily-df-td">-1.976</td>
+<td class="emily-df-td emily-df-monospace">GGACACCT</td>
+<td class="emily-df-td">0.685</td>
+<td class="emily-df-td">0.092</td>
+<td class="emily-df-td">0.746</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">GACAGCTGCTCATATTCATCTGACACCATGTGGCCACAAA</td>
+<td class="emily-df-td">-2.809</td>
+<td class="emily-df-td emily-df-monospace">ACACCATG</td>
+<td class="emily-df-td">-0.467</td>
+<td class="emily-df-td">0.474</td>
+<td class="emily-df-td">0.677</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">GACGAACAAAGAATCCTGCCTTACCTTCAGAGGACAGCTG</td>
+<td class="emily-df-td">-3.679</td>
+<td class="emily-df-td emily-df-monospace">ACCTTCAG</td>
+<td class="emily-df-td">-0.582</td>
+<td class="emily-df-td">-0.637</td>
+<td class="emily-df-td">0.656</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">GCTGCTTTTCTTCTCCCTACCTAGCCCTGGAGGCTGCCCG</td>
+<td class="emily-df-td">-3.175</td>
+<td class="emily-df-td emily-df-monospace">AGCCCTGG</td>
+<td class="emily-df-td">0.145</td>
+<td class="emily-df-td">0.054</td>
+<td class="emily-df-td">0.663</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">TTTTTACCATGTACTTATTGGCACAAATTCGGGCAGCCTC</td>
+<td class="emily-df-td">-2.78</td>
+<td class="emily-df-td emily-df-monospace">ACAAATTC</td>
+<td class="emily-df-td">-1.399</td>
+<td class="emily-df-td">-0.563</td>
+<td class="emily-df-td">0.339</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">CAGGACAACATCTTGTTGATGCGGATGACGTGGAAGGGGT</td>
+<td class="emily-df-td">-2.169</td>
+<td class="emily-df-td emily-df-monospace">GGATGACG</td>
+<td class="emily-df-td">0.119</td>
+<td class="emily-df-td">0.579</td>
+<td class="emily-df-td">0.646</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">ACCCCAATGTAGGCTCCAAACAGGCATGCGAGGTGCCTTT</td>
+<td class="emily-df-td">-3.53</td>
+<td class="emily-df-td emily-df-monospace">GGCATGCG</td>
+<td class="emily-df-td">-0.224</td>
+<td class="emily-df-td">0.088</td>
+<td class="emily-df-td">0.595</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">TGGACATGATAACTTGGCCAATGTGAACCCTGGCCACAGT</td>
+<td class="emily-df-td">-3.713</td>
+<td class="emily-df-td emily-df-monospace">GTGAACCC</td>
+<td class="emily-df-td">-0.125</td>
+<td class="emily-df-td">0.736</td>
+<td class="emily-df-td">0.567</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">CATGCTCCTTGTTCTGCAGCTTGGTGCGGATGGACATGAT</td>
+<td class="emily-df-td">-3.722</td>
+<td class="emily-df-td emily-df-monospace">GGTGCGGA</td>
+<td class="emily-df-td">-0.492</td>
+<td class="emily-df-td">0.402</td>
+<td class="emily-df-td">0.458</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">AACAAGGAGCATGTGATTGAGGCCCTGCGCAGGGCCAAGT</td>
+<td class="emily-df-td">-3.305</td>
+<td class="emily-df-td emily-df-monospace">CCCTGCGC</td>
+<td class="emily-df-td">-0.158</td>
+<td class="emily-df-td">0.143</td>
+<td class="emily-df-td">0.499</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">GGCCAGGAAACTTGAACTTGGCCCTGCGCAGGGCCTCAAT</td>
+<td class="emily-df-td">-2.092</td>
+<td class="emily-df-td emily-df-monospace">CCTGCGCA</td>
+<td class="emily-df-td">-0.702</td>
+<td class="emily-df-td">0.171</td>
+<td class="emily-df-td">0.595</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">AAGGGGGCTGCAGCACTACATACCTTCTGGCGGCCAGGAA</td>
+<td class="emily-df-td">-3.201</td>
+<td class="emily-df-td emily-df-monospace">CCTTCTGG</td>
+<td class="emily-df-td">0.037</td>
+<td class="emily-df-td">-0.9</td>
+<td class="emily-df-td">0.76</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">GGCTGAAAAGCGGCTCATCCCAGATGGCTGTGGGGTCAAG</td>
+<td class="emily-df-td">-1.677</td>
+<td class="emily-df-td emily-df-monospace">GATGGCTG</td>
+<td class="emily-df-td">0.005</td>
+<td class="emily-df-td">0.112</td>
+<td class="emily-df-td">0.509</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">ATCCCCAATCGTGGCCCTCTGGACAAGTGGCGGGCCCTGC</td>
+<td class="emily-df-td">-3.812</td>
+<td class="emily-df-td emily-df-monospace">ACAAGTGG</td>
+<td class="emily-df-td">0.803</td>
+<td class="emily-df-td">0.547</td>
+<td class="emily-df-td">0.891</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">TCTGGACAAGTGGCGGGCCCTGCACTCATGAGGGCTTCCA</td>
+<td class="emily-df-td">-3.487</td>
+<td class="emily-df-td emily-df-monospace">CACTCATG</td>
+<td class="emily-df-td">-0.071</td>
+<td class="emily-df-td">0.189</td>
+<td class="emily-df-td">0.528</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">GCAGCAAAGTCTCTCGCGACACCCTGTACGAGGCGGTGCG</td>
+<td class="emily-df-td">-2.461</td>
+<td class="emily-df-td emily-df-monospace">CCTGTACG</td>
+<td class="emily-df-td">0.982</td>
+<td class="emily-df-td">0.577</td>
+<td class="emily-df-td">0.752</td>
+</tr>
+<tr class="emily-df-even">
+<td class="emily-df-td emily-df-monospace">CCTGTACGAGGCGGTGCGGGAAGTCCTGCACGGGAACCAG</td>
+<td class="emily-df-td">-3.238</td>
+<td class="emily-df-td emily-df-monospace">GTCCTGCA</td>
+<td class="emily-df-td">0.356</td>
+<td class="emily-df-td">0.211</td>
+<td class="emily-df-td">0.673</td>
+</tr>
+<tr class="emily-df-odd">
+<td class="emily-df-td emily-df-monospace">TTCAAGCTGATCTGCAACTCCACCGTCTCCAGGAACCTTC</td>
+<td class="emily-df-td">-2.799</td>
+<td class="emily-df-td emily-df-monospace">CCGTCTCC</td>
+<td class="emily-df-td">0.328</td>
+<td class="emily-df-td">0.27</td>
+<td class="emily-df-td">0.49</td>
+</tr>
+</table><h1>Numpy Correlation Matrix to HTML Heat Map</h1>
+<style>
+.corr-table {
+                         border-collapse: collapse;
+                         padding-left: 50px;
+                         padding-top: 50px;
+                    }
+
+                         .corr-table, .corr-th, .corr-td {
+                         border: 1px solid black;
+                    }
+                    .corr-th, .corr-td {
+                         text-align: center;
+                         padding-left: 15px;
+                         padding-right: 15px;
+                    }
+                
+</style>
+<table class="corr-table">
+<tr class="corr-th"><th class="corr-th" style="background-color: grey;"></th>
+<th class="corr-th" style="background-color: grey;">result_KBM7</th>
+<th class="corr-th" style="background-color: grey;">folding_dG</th>
+<th class="corr-th" style="background-color: grey;">motif_scores</th>
+<th class="corr-th" style="background-color: grey;">motif_scores_seed</th>
+<th class="corr-th" style="background-color: grey;">be_seed_5</th>
+<th class="corr-th" style="background-color: grey;">be_seed_6</th>
+<th class="corr-th" style="background-color: grey;">se_seed_5</th>
+<th class="corr-th" style="background-color: grey;">se_full</th>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">result_KBM7</th>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.06</td>
+<td class="corr-td" style="color: #000000; background-color: #7e9ebf;">-0.359</td>
+<td class="corr-td" style="color: #000000; background-color: #7e9ebf;">-0.309</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.276</td>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.225</td>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">-0.083</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.014</td>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">folding_dG</th>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.06</td>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.029</td>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">-0.077</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.246</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.285</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">0.028</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.047</td>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">motif_scores</th>
+<td class="corr-td" style="color: #000000; background-color: #7e9ebf;">-0.359</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.029</td>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+<td class="corr-td" style="color: #ffffff; background-color: #647dab;">0.534</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">-0.244</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">-0.263</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">0.028</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.057</td>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">motif_scores_seed</th>
+<td class="corr-td" style="color: #000000; background-color: #7e9ebf;">-0.309</td>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">-0.077</td>
+<td class="corr-td" style="color: #ffffff; background-color: #647dab;">0.534</td>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+<td class="corr-td" style="color: #000000; background-color: #718db5;">-0.416</td>
+<td class="corr-td" style="color: #000000; background-color: #718db5;">-0.452</td>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">0.087</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.03</td>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">be_seed_5</th>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.276</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.246</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">-0.244</td>
+<td class="corr-td" style="color: #000000; background-color: #718db5;">-0.416</td>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+<td class="corr-td" style="color: #ffffff; background-color: #191970;">0.924</td>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.177</td>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">0.153</td>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">be_seed_6</th>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.225</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.285</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">-0.263</td>
+<td class="corr-td" style="color: #000000; background-color: #718db5;">-0.452</td>
+<td class="corr-td" style="color: #ffffff; background-color: #191970;">0.924</td>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.159</td>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.168</td>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">se_seed_5</th>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">-0.083</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">0.028</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">0.028</td>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">0.087</td>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.177</td>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.159</td>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.248</td>
+</tr>
+<tr class="corr-tr"><th class="corr-th" style="background-color: grey;">se_full</th>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.014</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.047</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.057</td>
+<td class="corr-td" style="color: #000000; background-color: #b0e0e6;">-0.03</td>
+<td class="corr-td" style="color: #000000; background-color: #a3cfdc;">0.153</td>
+<td class="corr-td" style="color: #000000; background-color: #97bfd2;">0.168</td>
+<td class="corr-td" style="color: #000000; background-color: #8aaec8;">0.248</td>
+<td class="corr-td" style="color: lightgrey; background-color: lightgrey;"></td>
+</tr>
+</table>
+
+</body>
+</html>
