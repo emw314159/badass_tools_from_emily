@@ -1,6 +1,10 @@
+#
+# import useful libraries
+#
 import pprint as pp
 import os
 import pandas as pd
+import pickle
 
 #
 # load data
@@ -169,12 +173,33 @@ f.close()
 
 
 #
-# load reorganized data
+# load and reorganize the CODA data
 #
-df = pd.read_csv('output/new_results.csv')
-print df
+f = open('output/codaCODAindex.txt')
+start = {}
+for line in f:
+    line = [x.strip() for x in line.split(' ')]
+    start[ int(line[1]) - 1 ] = {
+        'end' : int(line[2]) - 1,
+        'variable' : line[0],
+    }
+f.close()    
 
+chain = {}
+f = open('output/codaCODAchain1.txt')
+for i, line in enumerate(f):
+    if start.has_key(i):
+        variable = start[i]['variable']
+    if not chain.has_key(variable):
+        chain[variable] = []
+    chain[variable].append(float(line.split(' ')[1]))
+f.close()
 
+#
+# save CODA data in the form we are working with
+#
+with open('output/chain.pickled', 'w') as f:
+    pickle.dump(chain, f)
 
 import sys; sys.exit(0)
 
