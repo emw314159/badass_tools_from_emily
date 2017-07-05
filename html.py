@@ -1,5 +1,10 @@
 
 #
+# import useful libraries
+#
+from numpy import arange
+
+#
 # start HTML
 #
 def start_HTML(f, title, top_header=''):
@@ -34,7 +39,7 @@ def display_alt_amplicon_design_html(result_as_text, header=None):
 #
 # dataframe to table
 #
-def dataframe_to_table_HTML(df, prefix, headers=None, header_to_nice_name={}, style={}):
+def dataframe_to_table_HTML(df, prefix, headers=None, header_to_nice_name={}, style={}, header_color='#A4A4A4', even_color='FFB6C1', odd_color='#E6E6FA'):
 
     class_prefix = '.' + prefix
 
@@ -51,10 +56,13 @@ def dataframe_to_table_HTML(df, prefix, headers=None, header_to_nice_name={}, st
     html += '  padding-right: 25px;\n'
     html += '}\n'
     html += class_prefix + '-th {\n'
-    html += '  background-color: #A4A4A4;\n'
+    html += '  background-color: ' + header_color + ';\n'
     html += '}\n'
-    html += class_prefix + '-td {\n'
-    html += '  background-color: #D8D8D8;\n'
+    html += class_prefix + '-even {\n'
+    html += '  background-color: ' + even_color + ';\n'
+    html += '}\n'
+    html += class_prefix + '-odd {\n'
+    html += '  background-color: ' + odd_color + ';\n'
     html += '}\n'
     html += class_prefix + '-monospace {\n'
     html += '  font-family: monospace;\n'
@@ -75,7 +83,11 @@ def dataframe_to_table_HTML(df, prefix, headers=None, header_to_nice_name={}, st
     html += '</tr>\n'
     
     for i in range(0, len(df.index)):
-        html += '<tr class="' + prefix + '-row">\n'
+        row_status = 'even'
+        if i % 2 == 1:
+            row_status = 'odd'
+
+        html += '<tr class="' + prefix + '-' + row_status + '">\n'
         row =  df.iloc[i,:]
         value_list = []
         class_list = []
@@ -100,9 +112,90 @@ def dataframe_to_table_HTML(df, prefix, headers=None, header_to_nice_name={}, st
     return html
 
 
+
 #
-# correlation matrix
+# correlationsHeatMapHTML class
 #
-def correlation_matrix_HTML(matrix, header):
-    print matrix
-    print header
+class correlationsHeatMapHTML:
+    null_color = 'lightgrey'
+    header_color = 'grey'
+    abs_range_to_use = [0, 1]
+
+    text_colors = ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff',] 
+    
+    gradient = ['#b0e0e6', '#a3cfdc', '#97bfd2', '#8aaec8', '#7e9ebf', '#718db5', '#647dab', '#586ca1', '#4b5b97', '#3f4b8e', '#323a84', '#262a7a', '#191970',]
+
+    def __init__(self, matrix, header, class_name, round_to=3):
+        self.matrix = matrix
+        self.header = header
+        self.class_name = class_name
+        self.round_to = round_to
+        start = self.abs_range_to_use[0]
+        end = self.abs_range_to_use[1]
+        diff = float(end - start)
+        segment_length = diff / float(len(self.gradient))
+        self.segments = arange(start, end + segment_length, segment_length)
+
+    def getHTML(self):
+        html = '<style>\n'
+        html += '.' + self.class_name + """-table {
+                         border-collapse: collapse;
+                         padding-left: 50px;
+                         padding-top: 50px;
+                    }
+
+                         """ + '.' + self.class_name + '-table, .' + self.class_name + '-th, .' + self.class_name + """-td {
+                         border: 1px solid black;
+                    }
+                    """ + '.' + self.class_name + '-th, .' + self.class_name + """-td {
+                         text-align: center;
+                         padding-left: 15px;
+                         padding-right: 15px;
+                    }
+                """ + '\n'
+        html += '</style>\n'
+
+
+        html += '<table class="' + self.class_name + '-table">\n'
+
+        html += '<tr class="' + self.class_name + '-th"><th class="' + self.class_name + '-th" style="background-color: ' + self.header_color + ';"></th>\n'
+        for i, h in enumerate(self.header):
+            html += '<th class="' + self.class_name + '-th" style="background-color: ' + self.header_color + ';">' + h + '</th>\n'
+        html += '</tr>\n'
+
+        for i, h in enumerate(self.header):
+            html += '<tr class="' + self.class_name + '-tr"><th class="' + self.class_name + '-th" style="background-color: ' + self.header_color + ';">' + h + '</th>\n'
+            for j, h in enumerate(self.header):
+                value = self.matrix[i][j]
+
+
+
+                abs_value = abs(value)
+
+                for s, e, idx in zip(self.segments[0:-1], self.segments[1:], range(0, len(self.gradient))):
+                    if s <= abs_value and abs_value < e:
+                        gradient_index = idx
+                if abs_value == self.segments[-1]:
+                    gradient_index = len(self.gradient) - 1
+                color = self.gradient[gradient_index]
+                text_color = self.text_colors[gradient_index]
+
+                value = str(round(value, self.round_to))
+                if i == j:
+                    value = ''
+                    color = self.null_color
+                    text_color = self.null_color
+                html += '<td class="' + self.class_name + '-td" style="color: ' + text_color + '; background-color: ' + color + ';">' + value + '</td>\n'
+            html += '</tr>\n'
+
+
+
+        html += '</table>\n'
+
+
+        return html
+
+
+
+
+
