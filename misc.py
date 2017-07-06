@@ -9,6 +9,13 @@ import math
 # find duplicates in a list
 # (alternatively, find unique members of a list)
 #
+#
+# this returns a dictionary where the keys are unique list items
+# and the values are the counts of those items in the list
+#
+# the optional list argument "items_to_skip" gives a list of 
+# items to ignore during this process
+#
 def find_duplicates_and_unique_members_of_a_list(the_list, items_to_skip=[]):
     the_dict = {}
     for item in the_list:
@@ -23,6 +30,27 @@ def find_duplicates_and_unique_members_of_a_list(the_list, items_to_skip=[]):
 
 #
 # function to sort a group of lists by indices specified by sorting a given list
+#
+#
+# "info_dict" takes the form:
+#
+# info_dict = {
+#     'A' : [4.2, 1.3, 2.0],
+#     'B' : ['Bob', 'Susan', 'Raj'],
+#     'C' : [1, 2, 3],
+# }
+#
+# Then the command "s = sort_lists_by_rank_of_another_list(info_dict, 'A')" returns
+#
+# s = {
+#     'A' : [1.3, 2.0, 4.2],
+#     'B' : ['Susan', 'Raj', 'Bob'],
+#     'C' : [2, 3, 1],
+# }
+#
+# Basically it sorts all the lists by the "indices_key".
+#
+# The option boolean argument "reverse" enables a reverse sort.
 #
 def sort_lists_by_rank_of_another_list(info_dict, indices_key, reverse=False):
 
@@ -50,6 +78,8 @@ def sort_lists_by_rank_of_another_list(info_dict, indices_key, reverse=False):
 #
 # function to convert the primary keys of a dictionary to strings (to help output to JSON)
 #
+# found this necessary at some point
+#
 def convert_first_key_to_string(my_dict):
     new_dict = {}
     for key in my_dict.keys():
@@ -58,6 +88,19 @@ def convert_first_key_to_string(my_dict):
 
 #
 # function to divide lists into chucks
+#
+#
+# Takes a long list and returns a list of shorter lists of size "lengths" (plus the remainder).
+#
+# For example:
+#
+# my_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+#
+# chunk(my_list, 2) returns:
+#
+# [[1, 2], [3, 4], [5, 6], [7, 8], [9]]
+#
+# I've needed this for long Neo4j Cypher queries
 #
 def chunk(the_list, lengths):
     n = int(round(float(len(the_list)) / float(lengths)))
