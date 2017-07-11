@@ -15,8 +15,22 @@ from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
 
 from scipy.stats import spearmanr
-from emily_code_library import sort_lists_by_rank_of_another_list
+from badass_tools_from_emily.misc import sort_lists_by_rank_of_another_list
 
+
+
+#
+# negative binomial regression
+#
+class negative_binomial_wrapper(object):
+    def __init__(self, y, X):
+        import statsmodels.api as sm
+        self.X_header = list(X.columns.values)
+        self.y_header = list(y.columns.values)
+        family = sm.families.NegativeBinomial()
+        self.model = sm.GLM(y, X, family=family).fit()
+    def predict(self, X):
+        return self.model.predict(X) 
 
 
 #
