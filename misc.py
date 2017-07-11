@@ -18,6 +18,13 @@ def normalize_list_0_1(y):
     y = [x / max(y) for x in y]
     return y
 
+#
+# normalize a list between 0 and 127, return as integers
+#
+def normalize_list_int_0_127(y):
+    y = normalize_list_0_1(y)
+    y = [int(round(x * 127.)) for x in y]
+    return y
 
 #
 # find duplicates in a list
