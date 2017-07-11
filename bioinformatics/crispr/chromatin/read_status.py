@@ -1,10 +1,4 @@
 #
-# add to the Python path
-#
-import sys
-sys.path.append('/rhome/emily')
-
-#
 # load useful libraries
 #
 import pandas as pd
@@ -21,7 +15,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import badass_tools_from_emily.bioinformatics.seq_utils as su
-
+import badass_tools_from_emily.machine_learning.machine_learning as ml
 
 
 #
@@ -145,9 +139,9 @@ df['y'] = y
 # negative binomial
 #
 formula = 'y ~ count'
-model = smf.glm(formula=formula, data=df, family=sm.families.NegativeBinomial()).fit()
-print model.summary()
-predicted = model.predict(df)
+y, X = ml.categorize(formula, {}, df)
+model = ml.negative_binomial_wrapper(y, X)
+predicted = model.predict(X)
 
 print
 print pearsonr(df['y'], predicted)
@@ -165,3 +159,9 @@ plt.plot(x, abline_values, color='red')
 plt.savefig('output/regression_line.png')
 plt.close()
 
+#
+# cross validate
+#
+y, X = ml.categorize(formula, {}, df)
+model = ml.negative_binomial_wrapper(y, X)
+print model.predict(X)
