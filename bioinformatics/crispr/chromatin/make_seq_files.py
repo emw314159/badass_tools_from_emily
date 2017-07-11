@@ -4,6 +4,7 @@
 #
 import pprint as pp
 import pickle
+import codecs
 ##from Bio import SeqIO
 
 #
@@ -41,10 +42,22 @@ for chrom in sorted(counts.keys()):
                 list_dict[chrom][i] += value
 
 #
+# figure out global normalizing factor
+#
+max_value = 0
+for chrom in list_dict.keys():
+    local_max = max(list_dict[chrom])
+    if local_max > max_value:
+        max_value = local_max
+max_value = float(max_value)
+
+
+
+#
 # convert to ascii string
 #
 for chrom in sorted(list_dict.keys()):
-    f = open('output/ascii_' + chrom + '.txt', 'w')
-    f.write(''.join([chr(x) for x in list_dict[chrom]]) + '\n')
+    f = codecs.open('output/ascii_' + chrom + '.txt', 'w', encoding='ascii')
+    f.write(''.join([chr(int(round((float(x) / max_value) * 127.))) for x in list_dict[chrom]]) + '\n')
     f.close()
 

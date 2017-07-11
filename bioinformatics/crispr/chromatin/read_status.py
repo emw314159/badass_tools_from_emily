@@ -1,6 +1,7 @@
 #
 # load useful libraries
 #
+import codecs
 import pandas as pd
 import os
 import pprint as pp
@@ -17,6 +18,11 @@ import matplotlib.pyplot as plt
 import badass_tools_from_emily.bioinformatics.seq_utils as su
 import badass_tools_from_emily.machine_learning.machine_learning as ml
 from badass_tools_from_emily.misc import normalize_list_0_1
+
+#
+# user settings
+#
+number_of_v_fold_cycles = 1000
 
 #
 # load CRISPRs
@@ -73,7 +79,7 @@ for seq in mapped.keys():
 # find values
 #
 for chrom in chr_mapped.keys():
-    f = open('output/ascii_' + chrom + '.txt')
+    f = codecs.open('output/ascii_' + chrom + '.txt', encoding='ascii')
     for seq in chr_mapped[chrom].keys():
         pos = chr_mapped[chrom][seq]
         f.seek(pos)
@@ -87,6 +93,7 @@ for chrom in chr_mapped.keys():
 #
 use = 'result_HL60'
 use_label = 'Log2(Fold Change, HL60)'
+use_label_non_log = 'Fold Change, HL60'
 
 good = []
 bad = []
@@ -144,7 +151,7 @@ print pearsonr(df['y'], predicted)
 print
 
 #
-# plot regression line
+# plot regression line (NB)
 #
 plt.figure()
 plt.plot(predicted, df['y'], '.')
@@ -152,12 +159,70 @@ x = np.arange(min(plt.xlim()), max(plt.xlim()), 0.01)
 slope, intercept = np.polyfit(predicted, df['y'], 1)
 abline_values = [slope * i + intercept for i in x]
 plt.plot(x, abline_values, color='red')
-plt.savefig('output/regression_line.png')
+plt.savefig('output/regression_line_NB.png')
+plt.close()
+
+#
+# ols
+#
+y, X = ml.categorize(formula, {}, df)
+X['count_squared'] = [x**2. for x in X['count']]
+X['count_cubed'] = [x**3. for x in X['count']]
+model = ml.linear_wrapper(y, X)
+predicted = model.predict(X)
+
+print
+print pearsonr(df['y'], predicted)
+print
+
+#
+# plot regression line (OLS)
+#
+plt.figure()
+plt.plot(predicted, df['y'], '.')
+x = np.arange(min(plt.xlim()), max(plt.xlim()), 0.01)
+slope, intercept = np.polyfit(predicted, df['y'], 1)
+abline_values = [slope * i + intercept for i in x]
+plt.plot(x, abline_values, color='red')
+plt.savefig('output/regression_line_OLS.png')
 plt.close()
 
 #
 # cross validate
 #
+df['count_squared'] = [x**2. for x in df['count']] 
+df['count_cubed'] = [x**3. for x in df['count']]
+formula = 'y ~ count + count_squared + count_cubed'
 y, X = ml.categorize(formula, {}, df)
-model = ml.negative_binomial_wrapper(y, X)
-print model.predict(X)
+results = ml.v_fold(ml.linear_wrapper, y, X, number_of_v_fold_cycles, verbose=True, classification=False)
+
+sp_list = []
+for sp in results['spearmanr_list']:
+    if sp[1] <= 0.05:  # crude!
+        sp_list.append(sp[0])
+
+#
+# histogram
+#
+plt.figure()
+plt.hist(sp_list)
+plt.savefig('output/HIST_spearmanr.png')
+plt.close()
+
+#
+# ols final
+#
+formula = 'y ~ count + count_squared + count_cubed'
+y, X = ml.categorize(formula, {}, df)
+model = ml.linear_wrapper(y, X)
+
+#
+# save final model
+#
+with open('output/chromatin_linear_model.pickled', 'w') as f:
+    pickle.dump(model, f)
+
+
+
+
+
