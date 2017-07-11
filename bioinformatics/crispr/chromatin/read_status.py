@@ -43,7 +43,7 @@ f.close()
 #
 # find locations
 #
-#os.system('/rhome/emily/packages/bbmap/bbmap.sh -Xmx23g in=output/query.fastq ref=/rhome/emily/data/genomes/hg19/hg19.fasta k=9 maxindel=4 slow out=output/mapped.sam ambig=all')
+os.system('/rhome/emily/packages/bbmap/bbmap.sh -Xmx23g in=output/query.fastq ref=/rhome/emily/data/genomes/hg19/hg19.fasta k=9 maxindel=4 slow out=output/mapped.sam ambig=all')
 
 #
 # read mapped file
@@ -206,7 +206,7 @@ for sp in results['spearmanr_list']:
 #
 plt.figure()
 plt.hist(sp_list)
-plt.savefig('output/HIST_spearmanr.png')
+plt.savefig('output/HIST_spearmanr_OLS.png')
 plt.close()
 
 #
@@ -221,8 +221,6 @@ model = ml.linear_wrapper(y, X)
 #
 with open('output/chromatin_linear_model.pickled', 'w') as f:
     pickle.dump(model, f)
-
-
 
 
 
