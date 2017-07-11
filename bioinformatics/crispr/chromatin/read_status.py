@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 import badass_tools_from_emily.bioinformatics.seq_utils as su
 import badass_tools_from_emily.machine_learning.machine_learning as ml
-
+from badass_tools_from_emily.misc import normalize_list_0_1
 
 #
 # load CRISPRs
@@ -104,7 +104,6 @@ p = mannwhitneyu(good, bad)[1]
 print '%0.2e' % (p)
 print
 
-
 #
 # histogram of counts
 #
@@ -130,10 +129,7 @@ plt.close()
 #
 # normalize
 #
-y = df[use]
-y = [x - min(y) for x in y]
-y = [x / max(y) for x in y]
-df['y'] = y
+df['y'] = normalize_list_0_1(df[use])
 
 #
 # negative binomial
