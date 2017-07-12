@@ -11,6 +11,7 @@ import statsmodels.formula.api as smf
 import statsmodels.api as sm
 import numpy as np
 import glob
+from sklearn.metrics import roc_curve, auc
 
 import matplotlib
 matplotlib.use('Agg')
@@ -23,7 +24,7 @@ from badass_tools_from_emily.misc import normalize_list_0_1
 #
 # user settings
 #
-number_of_v_fold_cycles = 1000
+number_of_v_fold_cycles = 10
 cdnas_binary = '/rhome/emily/swteam/emily/cdna/cdnas' 
 cdnai_indexed_genome_directory = '/rhome/emily/data/genomes/hg19/split'
 
@@ -287,4 +288,31 @@ abline_values = [slope * i + intercept for i in x]
 plt.plot(x, abline_values, color='red')
 plt.savefig('output/regression_line_OLS.png')
 plt.close()
+
+#
+# ROC
+#
+status = []
+for x in df[alt]:
+    if x >= -0.8:
+        status.append(1)
+    else:
+        status.append(0)
+df['status'] = status
+
+fpr, tpr, _ = roc_curve(df['status'], predicted)
+roc_auc = auc(fpr, tpr)
+
+plt.figure()
+plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC Curve (Area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve for Chromatin Impact Prediction Model')
+plt.legend(loc="lower right")
+plt.savefig('output/ROC.png')
+plt.close()
+
 
