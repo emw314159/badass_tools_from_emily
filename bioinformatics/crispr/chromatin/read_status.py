@@ -10,6 +10,7 @@ import pickle
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
 import numpy as np
+import glob
 
 import matplotlib
 matplotlib.use('Agg')
@@ -23,57 +24,68 @@ from badass_tools_from_emily.misc import normalize_list_0_1
 # user settings
 #
 number_of_v_fold_cycles = 1000
+cdnas_binary = '/rhome/emily/swteam/emily/cdna/cdnas' 
+cdnai_indexed_genome_directory = '/rhome/emily/data/genomes/hg19/split'
 
+ 
 #
 # load CRISPRs
 #
 df = pd.read_csv('data/df_first_WITH_SCORES.csv')
 
 #
-# write FASTQ file
+# write FASTA file
 #
-f = open('output/query.fastq', 'w')
+f = open('output/query.fasta', 'w')
 for seq in df['sequence']:
-    f.write('@' + seq + '\n')
+    f.write('>' + seq + '\n')
     f.write(seq + '\n')
-    f.write('+' + '\n')
-    f.write('~' * len(seq) + '\n')
 f.close()
 
-#
-# find locations
-#
-#os.system('/rhome/emily/packages/bbmap/bbmap.sh -Xmx23g in=output/query.fastq ref=/rhome/emily/data/genomes/hg19/hg19.fasta k=9 maxindel=4 slow out=output/mapped.sam ambig=all')
+# #
+# # find locations
+# #
+# os.system('echo "" > output/locations.tsv')
+# db_list = glob.glob(cdnai_indexed_genome_directory + '/*.fasta')
+# for db in db_list:
+#     cmd = cdnas_binary + ' -1 -E dna ' + db + ' output/query.fasta >> output/locations.tsv'
+#     os.system(cmd)
+
 
 #
-# read mapped file
+# read locations
 #
 mapped = {}
-f = open('output/mapped.sam')
+f = open('output/locations.tsv')
 for line in f:
-    line = line.strip()
-    if line[0] == '@':  continue
-    line = [x.strip() for x in line.split('\t')]
+    if line.strip() == '':  continue
+    line = [x.strip().replace('>', '') for x in line.split('\t')]
     seq = line[0]
-    chrom = line[2]
-    pos = int(line[3])
-    hit = line[9]
+    chrom = line[1]
+    seqpos = [int(x) for x in line[3].replace('seqpos=', '').split('..')]
+    start = min(seqpos)
+    end = max(seqpos)
+    position = int(round(np.mean([start, end])))
 
-    if len(hit) == len(seq):
-        if seq == hit or seq == su.rv_comp(hit):
-            mapped[seq] = {'chromosome' : chrom, 'position' : pos}
-f.close()
+    if not mapped.has_key(seq):
+        mapped[seq] = {}
+    if not mapped[seq].has_key(chrom):
+        mapped[seq][chrom] = {}
+    mapped[seq][chrom][position] = {'start' : start, 'end' : end}
+
 
 #
 # reorganize mapped
 #
 chr_mapped = {}
 for seq in mapped.keys():
-    chrom = mapped[seq]['chromosome']
-    pos = mapped[seq]['position']
-    if not chr_mapped.has_key(chrom):
-        chr_mapped[chrom] = {}
-    chr_mapped[chrom][seq] = pos  # this has the effect of writing over case with two positions on one chromosome
+    for chrom in mapped[seq].keys():
+        for pos in mapped[seq][chrom].keys():
+            if not chr_mapped.has_key(chrom):
+                chr_mapped[chrom] = {}
+            if not chr_mapped[chrom].has_key(seq):
+                chr_mapped[chrom][seq] = {}
+            chr_mapped[chrom][seq][pos] = None
 
 #
 # find values
@@ -81,10 +93,25 @@ for seq in mapped.keys():
 for chrom in chr_mapped.keys():
     f = codecs.open('output/ascii_' + chrom + '.txt', encoding='ascii')
     for seq in chr_mapped[chrom].keys():
-        pos = chr_mapped[chrom][seq]
-        f.seek(pos)
-        count = ord(f.read(1))
-        mapped[seq]['count'] = count
+        for pos in chr_mapped[chrom][seq].keys():
+            f.seek(pos)
+            count = ord(f.read(1))
+            mapped[seq][chrom][pos]['count'] = count
+
+
+#
+# find median count
+#
+medians = {}
+for seq in mapped.keys():
+    count_list = []
+    for chrom in mapped[seq].keys():
+        for pos in mapped[seq][chrom].keys():
+            count_list.append(mapped[seq][chrom][pos]['count'])
+    medians[seq] = {'counts' : count_list, 'median' : np.median(count_list)}
+
+
+
 
 
 
@@ -97,25 +124,38 @@ use_name = 'KBM-7'
 alt_name = 'HL-60'
 use_label = 'Log2(Fold Change, KBM-7)'
 alt_label = 'Log2(Fold Change, HL-60)'
+cutoff = 40
+
+
+
+
+count_list = []
+for seq, y in zip(df['sequence'], df[use]):
+    count_list.append(medians[seq]['median'])
+df['count'] = count_list
+
 
 good = []
 bad = []
-count_list = []
 for seq, y in zip(df['sequence'], df[use]):
-    count_list.append(mapped[seq]['count'])
-    if mapped[seq]['count'] <= 40:
+    
+    if medians[seq]['median'] <= cutoff:
         good.append(y)
     else:
         bad.append(y)
-df['count'] = count_list
+
 
 good_alt = []
 bad_alt = []
 for seq, y in zip(df['sequence'], df[alt]):
-    if mapped[seq]['count'] <= 40:
+    if medians[seq]['median'] <= cutoff:
         good_alt.append(y)
     else:
         bad_alt.append(y)
+
+
+print len(good), len(bad)
+print len(good_alt), len(bad_alt)
 
 
 print
@@ -125,17 +165,13 @@ print
 
 print
 p_alt = mannwhitneyu(good_alt, bad_alt)[1]
-print '%0.2e' % (p)
+print '%0.2e' % (p_alt)
 print
 
 
-#
-# histogram of counts
-#
-plt.figure()
-plt.hist(df['count'])
-plt.savefig('output/HIST_counts.png')
-plt.close()
+
+
+
 
 
 #
@@ -158,6 +194,11 @@ plt.xticks([1, 2], ['Low (n=' + str(len(good_alt)) + ')', 'High (n=' + str(len(b
 
 plt.savefig('output/boxplot.png')
 plt.close()
+
+
+
+
+
 
 
 #
@@ -203,6 +244,8 @@ sp_list = []
 for sp in results['spearmanr_list']:
     if sp[1] <= 0.05:  # crude!
         sp_list.append(sp[0])
+
+
 
 #
 # histogram
