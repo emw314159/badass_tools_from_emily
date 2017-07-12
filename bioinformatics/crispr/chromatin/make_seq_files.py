@@ -5,13 +5,20 @@
 import pprint as pp
 import pickle
 import codecs
-##from Bio import SeqIO
+from Bio import SeqIO
 
 #
 # user settings
 #
-###genome_fasta = '/rhome/emily/data/genomes/hg19/hg19.fasta' 
+genome_fasta = '/rhome/emily/data/genomes/hg19/hg19.fasta' 
 overshoot = 100
+
+#
+# read genome
+#
+max_lengths = {}
+for record in SeqIO.parse(genome_fasta, 'fasta'):
+    max_lengths[record.id] = len(record.seq)
 
 #
 # load counts
@@ -24,12 +31,11 @@ with open('output/counts.pickled') as f:
 #
 list_dict = {}
 for chrom in sorted(counts.keys()):
-    max_end = 0
     for start in counts[chrom].keys():
         for end in counts[chrom][start].keys():
-            if end > max_end:
-                max_end = end
-    list_dict[chrom] = [0] * (max_end + overshoot)
+            if end > max_lengths[chrom]:
+                max_end = max_lengths[chrom]
+    list_dict[chrom] = [0] * (max_lengths[chrom] + overshoot)
 
 #
 # match
