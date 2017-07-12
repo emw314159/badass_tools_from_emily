@@ -43,7 +43,7 @@ f.close()
 #
 # find locations
 #
-os.system('/rhome/emily/packages/bbmap/bbmap.sh -Xmx23g in=output/query.fastq ref=/rhome/emily/data/genomes/hg19/hg19.fasta k=9 maxindel=4 slow out=output/mapped.sam ambig=all')
+#os.system('/rhome/emily/packages/bbmap/bbmap.sh -Xmx23g in=output/query.fastq ref=/rhome/emily/data/genomes/hg19/hg19.fasta k=9 maxindel=4 slow out=output/mapped.sam ambig=all')
 
 #
 # read mapped file
@@ -91,25 +91,43 @@ for chrom in chr_mapped.keys():
 #
 # statistics
 #
-use = 'result_HL60'
-use_label = 'Log2(Fold Change, HL60)'
-use_label_non_log = 'Fold Change, HL60'
+use = 'result_KBM7'
+alt = 'result_HL60'
+use_name = 'KBM-7'
+alt_name = 'HL-60'
+use_label = 'Log2(Fold Change, KBM-7)'
+alt_label = 'Log2(Fold Change, HL-60)'
 
 good = []
 bad = []
 count_list = []
 for seq, y in zip(df['sequence'], df[use]):
     count_list.append(mapped[seq]['count'])
-    if mapped[seq]['count'] <= 20:
+    if mapped[seq]['count'] <= 40:
         good.append(y)
     else:
         bad.append(y)
 df['count'] = count_list
 
+good_alt = []
+bad_alt = []
+for seq, y in zip(df['sequence'], df[alt]):
+    if mapped[seq]['count'] <= 40:
+        good_alt.append(y)
+    else:
+        bad_alt.append(y)
+
+
 print
 p = mannwhitneyu(good, bad)[1]
 print '%0.2e' % (p)
 print
+
+print
+p_alt = mannwhitneyu(good_alt, bad_alt)[1]
+print '%0.2e' % (p)
+print
+
 
 #
 # histogram of counts
@@ -123,12 +141,21 @@ plt.close()
 #
 # boxplot
 #
-plt.figure()
+plt.figure(figsize=[14, 10])
+plt.subplot(1, 2, 2)
 plt.boxplot([good, bad], widths=0.95)
 plt.ylabel(use_label)
 plt.xlabel('Chromatin Presence at gRNA Location Across Cell Lines\n(p=%0.2e, Mann-Whitney U Test)' % (p))
-plt.title('Cell-Line Agnostic Impact of Chromatin Presence\nat gRNA Location')
-plt.xticks([1, 2], ['Low', 'High'])
+plt.title('Cell-Line Agnostic Impact of Chromatin Presence\nat gRNA Locations (' + use_name + ')')
+plt.xticks([1, 2], ['Low (n=' + str(len(good)) + ')', 'High (n=' + str(len(bad)) + ')'])
+
+plt.subplot(1, 2, 1)
+plt.boxplot([good_alt, bad_alt], widths=0.95)
+plt.ylabel(alt_label)
+plt.xlabel('Chromatin Presence at gRNA Location Across Cell Lines\n(p=%0.2e, Mann-Whitney U Test)' % (p_alt))
+plt.title('Cell-Line Agnostic Impact of Chromatin Presence\nat gRNA Locations (' + alt_name + ')')
+plt.xticks([1, 2], ['Low (n=' + str(len(good_alt)) + ')', 'High (n=' + str(len(bad_alt)) + ')'])
+
 plt.savefig('output/boxplot.png')
 plt.close()
 
@@ -151,18 +178,6 @@ print pearsonr(df['y'], predicted)
 print
 
 #
-# plot regression line (NB)
-#
-plt.figure()
-plt.plot(predicted, df['y'], '.')
-x = np.arange(min(plt.xlim()), max(plt.xlim()), 0.01)
-slope, intercept = np.polyfit(predicted, df['y'], 1)
-abline_values = [slope * i + intercept for i in x]
-plt.plot(x, abline_values, color='red')
-plt.savefig('output/regression_line_NB.png')
-plt.close()
-
-#
 # ols
 #
 y, X = ml.categorize(formula, {}, df)
@@ -174,18 +189,6 @@ predicted = model.predict(X)
 print
 print pearsonr(df['y'], predicted)
 print
-
-#
-# plot regression line (OLS)
-#
-plt.figure()
-plt.plot(predicted, df['y'], '.')
-x = np.arange(min(plt.xlim()), max(plt.xlim()), 0.01)
-slope, intercept = np.polyfit(predicted, df['y'], 1)
-abline_values = [slope * i + intercept for i in x]
-plt.plot(x, abline_values, color='red')
-plt.savefig('output/regression_line_OLS.png')
-plt.close()
 
 #
 # cross validate
@@ -222,5 +225,23 @@ model = ml.linear_wrapper(y, X)
 with open('output/chromatin_linear_model.pickled', 'w') as f:
     pickle.dump(model, f)
 
+#
+# compare to (semi) alternate data set
+#
+predicted = model.predict(X)
+print
+print pearsonr(df[alt], predicted)
+print
 
+#
+# plot regression line (semi-alternate)
+#
+plt.figure()
+plt.plot(df[alt], predicted, '.')
+x = np.arange(min(plt.xlim()), max(plt.xlim()), 0.01)
+slope, intercept = np.polyfit(df[alt], predicted, 1)
+abline_values = [slope * i + intercept for i in x]
+plt.plot(x, abline_values, color='red')
+plt.savefig('output/regression_line_OLS.png')
+plt.close()
 
