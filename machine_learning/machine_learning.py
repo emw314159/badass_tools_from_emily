@@ -96,7 +96,7 @@ class random_forest_classification_wrapper(object):
 #
 # Generic v-fold cross validation
 #
-def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose=False, **kwargs):
+def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose=False, training_set_proportion=0.8, **kwargs):
 
     if classification:
         auc_list = []
@@ -116,7 +116,7 @@ def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose
             print 'Iteration ' + str(n)
 
         yn = len(y)
-        training_idx = random.sample( range(0, yn) , int(round(4. * float(yn) / 5.))) 
+        training_idx = random.sample( range(0, yn) , int(round(training_set_proportion * float(yn)))) 
         training_idx_dict = {}
         for t in training_idx:
             training_idx_dict[t] = None
