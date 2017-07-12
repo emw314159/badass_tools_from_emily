@@ -5,7 +5,7 @@ import codecs
 import pandas as pd
 import os
 import pprint as pp
-from scipy.stats import mannwhitneyu, pearsonr
+from scipy.stats import mannwhitneyu, pearsonr, ttest_ind
 import pickle
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
@@ -315,4 +315,47 @@ plt.legend(loc="lower right")
 plt.savefig('output/ROC.png')
 plt.close()
 
+#
+# try cancelling out efficiency
+#
 
+cutoff = 30
+
+
+df['score'] = ((-1. * df['regression_score']) + max(df['regression_score']))
+df['score'] = df['score'] / max(df['score']) 
+
+diff = max(df[alt]) - min(df[alt])
+df['score'] = df['score'] * diff
+df['score'] = df['score'] + min(df[alt])    
+
+
+df['corrected'] = df[alt] - df['score']
+
+
+plt.figure()
+plt.plot(range(0, len(df[alt])), df['corrected'], '.')
+plt.savefig('output/temp.png')
+plt.close()
+
+good_alt = []
+bad_alt = []
+for seq, y in zip(df['sequence'], df['corrected']):
+    if medians[seq]['median'] <= cutoff:
+        good_alt.append(y)
+    else:
+        bad_alt.append(y)
+
+print
+print len(good_alt), len(bad_alt)
+
+p = mannwhitneyu(good_alt, bad_alt)[1]
+print p
+p = ttest_ind(good_alt, bad_alt)[1]
+print p
+
+plt.figure()
+plt.boxplot([good_alt, bad_alt], widths=0.95)
+plt.xticks([1, 2], ['Low (n=' + str(len(good_alt)) + ')', 'High (n=' + str(len(bad_alt)) + ')'])
+plt.savefig('output/corrected.png')
+plt.close()
