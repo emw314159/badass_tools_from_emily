@@ -5,6 +5,27 @@
 import math
 
 
+
+
+#
+# normalize a list between 0. and 1.
+#
+def normalize_list_0_1(y):
+    y = [float(x) for x in y]
+    min_y = min(y)
+    y = [x - min_y for x in y]
+    max_y = max(y)
+    y = [x / max(y) for x in y]
+    return y
+
+#
+# normalize a list between 0 and 127, return as integers
+#
+def normalize_list_int_0_127(y):
+    y = normalize_list_0_1(y)
+    y = [int(round(x * 127.)) for x in y]
+    return y
+
 #
 # find duplicates in a list
 # (alternatively, find unique members of a list)

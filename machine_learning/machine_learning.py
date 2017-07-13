@@ -15,8 +15,22 @@ from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
 
 from scipy.stats import spearmanr
-from emily_code_library import sort_lists_by_rank_of_another_list
+from badass_tools_from_emily.misc import sort_lists_by_rank_of_another_list
 
+
+
+#
+# negative binomial regression
+#
+class negative_binomial_wrapper(object):
+    def __init__(self, y, X):
+        import statsmodels.api as sm
+        self.X_header = list(X.columns.values)
+        self.y_header = list(y.columns.values)
+        family = sm.families.NegativeBinomial()
+        self.model = sm.GLM(y, X, family=family).fit()
+    def predict(self, X):
+        return self.model.predict(X) 
 
 
 #
@@ -82,7 +96,7 @@ class random_forest_classification_wrapper(object):
 #
 # Generic v-fold cross validation
 #
-def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose=False, **kwargs):
+def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose=False, training_set_proportion=0.8, **kwargs):
 
     if classification:
         auc_list = []
@@ -102,7 +116,7 @@ def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose
             print 'Iteration ' + str(n)
 
         yn = len(y)
-        training_idx = random.sample( range(0, yn) , int(round(4. * float(yn) / 5.))) 
+        training_idx = random.sample( range(0, yn) , int(round(training_set_proportion * float(yn)))) 
         training_idx_dict = {}
         for t in training_idx:
             training_idx_dict[t] = None

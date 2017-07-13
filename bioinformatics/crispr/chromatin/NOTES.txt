@@ -1,0 +1,6 @@
+
+python get_files.py
+
+python make_seq_files.py
+
+python read_status.py
