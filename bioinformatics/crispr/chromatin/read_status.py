@@ -357,5 +357,8 @@ print p
 plt.figure()
 plt.boxplot([good_alt, bad_alt], widths=0.95)
 plt.xticks([1, 2], ['Low (n=' + str(len(good_alt)) + ')', 'High (n=' + str(len(bad_alt)) + ')'])
+plt.ylabel('Performance After Cancelling Out\nPredicted Efficiency')
+plt.xlabel('Chromatin Presence at gRNA Locations\n(p=%0.2e, t-test)' % (p))
+plt.title('Cancelling Out Efficiency Differences Using Efficiency Model\nBefore Testing for Chromatin Impact (' + alt_name + ')')
 plt.savefig('output/corrected.png')
 plt.close()
