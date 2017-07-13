@@ -125,6 +125,9 @@ use_name = 'KBM-7'
 alt_name = 'HL-60'
 use_label = 'Log2(Fold Change, KBM-7)'
 alt_label = 'Log2(Fold Change, HL-60)'
+use_label_unlog = 'Fold Change, KBM-7'
+alt_label_unlog = 'Fold Change, HL-60'
+
 cutoff = 40
 
 
@@ -196,6 +199,26 @@ plt.xticks([1, 2], ['Low (n=' + str(len(good_alt)) + ')', 'High (n=' + str(len(b
 plt.savefig('output/boxplot.png')
 plt.close()
 
+#
+# boxplot un-logged
+#
+plt.figure(figsize=[14, 10])
+plt.subplot(1, 2, 2)
+plt.boxplot([[2.**x for x in good], [2.**x for x in bad]], widths=0.95)
+plt.ylabel(use_label_unlog)
+plt.xlabel('Chromatin Presence at gRNA Location Across Cell Lines\n(p=%0.2e, Mann-Whitney U Test)' % (p))
+plt.title('Cell-Line Agnostic Impact of Chromatin Presence\nat gRNA Locations (' + use_name + ')')
+plt.xticks([1, 2], ['Low (n=' + str(len(good)) + ')', 'High (n=' + str(len(bad)) + ')'])
+
+plt.subplot(1, 2, 1)
+plt.boxplot([[2.**x for x in good_alt], [2.**x for x in bad_alt]], widths=0.95)
+plt.ylabel(alt_label_unlog)
+plt.xlabel('Chromatin Presence at gRNA Location Across Cell Lines\n(p=%0.2e, Mann-Whitney U Test)' % (p_alt))
+plt.title('Cell-Line Agnostic Impact of Chromatin Presence\nat gRNA Locations (' + alt_name + ')')
+plt.xticks([1, 2], ['Low (n=' + str(len(good_alt)) + ')', 'High (n=' + str(len(bad_alt)) + ')'])
+
+plt.savefig('output/boxplot_unlogged.png')
+plt.close()
 
 
 
@@ -362,3 +385,68 @@ plt.xlabel('Chromatin Presence at gRNA Locations\n(p=%0.2e, t-test)' % (p))
 plt.title('Cancelling Out Efficiency Differences Using Efficiency Model\nBefore Testing for Chromatin Impact (' + alt_name + ')')
 plt.savefig('output/corrected.png')
 plt.close()
+
+
+
+#
+# test interaction effect
+#
+df['count_squared'] = [x**2. for x in df['count']] 
+df['count_cubed'] = [x**3. for x in df['count']]
+formula = 'y ~ count + count_squared + count_cubed'
+y, X = ml.categorize(formula, {}, df)
+model = ml.linear_wrapper(y, X)
+
+print
+print model.model.summary()
+print
+
+df['interaction'] = [x * y for x, y in zip(df['count'], df['regression_score'])]
+formula = 'y ~ count + count_squared + count_cubed + interaction'
+y, X = ml.categorize(formula, {}, df)
+model = ml.linear_wrapper(y, X)
+
+print
+print model.model.summary()
+print
+
+formula = 'y ~ count + count_squared + count_cubed + interaction + regression_score'
+y, X = ml.categorize(formula, {}, df)
+model = ml.linear_wrapper(y, X)
+
+print
+print model.model.summary()
+print
+
+formula = 'y ~ count + count_squared + count_cubed + regression_score'
+y, X = ml.categorize(formula, {}, df)
+model = ml.linear_wrapper(y, X)
+
+print
+print model.model.summary()
+print
+
+#
+# organized for display
+#
+df['efficiency_score'] = df['regression_score']
+formula = 'y ~ count + np.power(count, 2.) + np.power(count, 3.) + count * efficiency_score'
+model = smf.ols(formula=formula, data=df).fit()
+
+print
+print model.summary()
+print
+
+formula = 'y ~ efficiency_score'
+model = smf.ols(formula=formula, data=df).fit()
+
+print
+print model.summary()
+print
+
+formula = 'y ~ count + np.power(count, 2.) + np.power(count, 3.) + count * efficiency_score + count : np.power(efficiency_score, 2.)'
+model = smf.ols(formula=formula, data=df).fit()
+
+print
+print model.summary()
+print
