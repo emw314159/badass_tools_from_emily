@@ -1,0 +1,26 @@
+<html>
+  <head>
+    {% load static %}
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <script type="text/javascript" src="{% static "fac_index.js" %}"></script>
+  </head>
+
+
+  <body>
+    <div ng-app="fashionistas-solar-app">
+      <h1>A Fashionista's Solar Noon Calculator</h1>
+      <form name="fashionistas-form" ng-controller="fashionistas-solar-controller">
+	<p>
+	  Your timezone is: 
+	  {% verbatim %}
+	  {{ tz }}.
+	  {% endverbatim %}
+	</p>
+	Latitude: <input type="number" ng-model="latitude"/>
+	<br/>
+	Longitude: <input type="number" ng-model="longitude"/>
+      </form>
+    </div>
+  </body>
+</html>
+
