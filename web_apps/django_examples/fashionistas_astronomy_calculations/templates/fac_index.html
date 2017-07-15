@@ -3,6 +3,7 @@
     {% load static %}
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
     <script type="text/javascript" src="{% static "fac_index.js" %}"></script>
+    <link rel="stylesheet" href="{% static "fac_index.css" %}"></link>
   </head>
 
 
@@ -10,20 +11,23 @@
     <div ng-app="fashionistas_solar_app">
       <h1>A Fashionista's Solar Noon Calculator</h1>
       <p>For reasons that entirely have to do with fashion, I take many pictures of myself. However, I do not have control over my lighting considering that I shoot outside. So I try to shoot photos at solar noon, the point in the day when the sun is at its highest. This reduces shadows.</p>
-      <p>This application tells me when solar noon occurs on the current day.</p>
-      <p>Demonstrates my skill in Python, Django, and Javascript (particularly AngularJS).</p>
+      <p>This application tells me when solar noon occurs for the current day.</p>
+      <p class="skills-demo">Demonstrates my skill in Python, Django, and Javascript (particularly AngularJS).</p>
 
       <h3>Please enter your timezone, latitude, and longitude:</h3>
 
       <form name="fashionistas_form" ng-controller="fashionistas_solar_controller">
-	Timezone: <input type="text" ng-model="timezone" required/>
-	<br/>
-	Latitude: <input type="number" step="any" ng-model="latitude" required/>
-	<br/>
-	Longitude: <input type="number" step="any" ng-model="longitude" required/>
-	<br/>
+	<div id="input-div">
+	  Timezone: <input type="text" ng-model="timezone" required/>
+	  <br/>
+	  Latitude: <input type="number" step="any" ng-model="latitude" required/>
+	  <br/>
+	  Longitude: <input type="number" step="any" ng-model="longitude" required/>
+	  <br/>
+	</div>
 	<br/>
 	<button ng-disabled="!fashionistas_form.$valid" ng-click="buttonClicked()">Go!</button>
+
 
 	<div ng-show="have_result">
 	  <h3>Solar noon for {% verbatim %}{{timezone}}{% endverbatim%} occurs at {% verbatim %}{{local_noon}}{% endverbatim %}.</h3>
