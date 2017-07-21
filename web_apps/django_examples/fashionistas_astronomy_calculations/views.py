@@ -6,11 +6,7 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from django.template import loader
 from rest_framework.decorators import api_view
-#from rest_framework.response import Response
 
-import pytz
-from datetime import datetime
-import ephem
 
 #
 # index
@@ -30,10 +26,5 @@ def solar_noon(request):
         solar_noon = sn.solar_noon(str(request.data['latitude']), str(request.data['longitude']), request.data['timezone'])
 
     return JsonResponse(solar_noon)
-
-
-    
-
-    
 
 
