@@ -1,9 +1,12 @@
 
+#
+# import useful libraries
+#
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-import emily_code_library as em
+import badass_tools_from_emily.misc as em
 
 #
 # plot feature importances
