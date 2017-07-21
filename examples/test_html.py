@@ -1,12 +1,14 @@
 
-import html as ht
+#
+# import useful libraries
+#
 import pandas as pd
-#import statsmodels.formula.api as smf
-import numpy as np
+import badass_tools_from_emily.html as ht
 
-
+#
+# main function
+#
 def main():
-
 
     #
     # load data frame and start and HTML file
@@ -14,7 +16,6 @@ def main():
     df = pd.read_csv('data/dataframe.csv')
     f = open('output/test_html_example_output.html', 'w')
     ht.start_HTML(f, 'Emily\'s HTML Automation Examples')
-
 
     #
     # demonstrate dataframe to HTML code
@@ -33,7 +34,6 @@ def main():
     f.write('<h1>Pandas Dataframe to HTML Table Example:</h1>')
     f.write(ht.dataframe_to_table_HTML(df.iloc[range(0, 20),:], 'emily-df', headers=headers, style=style))
 
-
     #
     # demonstrate correlation matrix to HTML code
     #
@@ -44,13 +44,15 @@ def main():
     corr_html = ht.correlationsHeatMapHTML(corr_matrix, list(df2.columns.values), 'corr')
     f.write(corr_html.getHTML() + '\n')
 
-   
     #
     # End and close out the HTML
     #
     ht.end_and_close_HTML(f)
 
 
+#
+# initiate main function
+#
 if __name__ == "__main__":
     main()
 
