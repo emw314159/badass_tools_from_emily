@@ -6,7 +6,9 @@ import random
 
 
 
-
+#
+# cross-validate the tri-nucleotide method
+#
 def tri_v_fold(y_col_name, sequence_col_name, df, v_fold_cycles, count_base=0., normalize_by_length=False):
     print 'Markov v-fold:'
     spearman_list = []
@@ -32,7 +34,9 @@ def tri_v_fold(y_col_name, sequence_col_name, df, v_fold_cycles, count_base=0., 
     return spearman_list
 
 
-
+#
+# score a data frame using the tri-nucleotide method
+#
 def tri_score_df(model, df, sequence_col_name, normalize_by_length=False):
     score_list = []
     for seq in df[sequence_col_name]:
@@ -41,7 +45,9 @@ def tri_score_df(model, df, sequence_col_name, normalize_by_length=False):
     return score_list
 
 
-
+#
+# score a sequence using the tri-nucleotide method
+#
 def tri_score_a_sequence(model, seq, normalize_by_length=False):
     score = 0.
     for i in range(0, len(seq) - 2):
@@ -54,7 +60,9 @@ def tri_score_a_sequence(model, seq, normalize_by_length=False):
         score = score / float(len(seq) - 2)
     return score
 
-
+#
+# build a tri-nucleotide method model
+#
 def tri(df, y_col_name, sequence_col_name, cutoffs=[100./3., 200./3.], count_base=0.):
     cutoff_values = percentile(df[y_col_name], cutoffs)
     lower_group_max = cutoff_values[0]
@@ -94,6 +102,9 @@ def tri(df, y_col_name, sequence_col_name, cutoffs=[100./3., 200./3.], count_bas
     return normalize(model, all_bases, count_base)
 
 
+#
+# build dinucleotide method model
+#
 def build_markov_model(df, y_col_name, sequence_col_name, cutoffs=[100./3., 200./3.], count_base=0.):
     cutoff_values = percentile(df[y_col_name], cutoffs)
     lower_group_max = cutoff_values[0]
@@ -129,7 +140,9 @@ def build_markov_model(df, y_col_name, sequence_col_name, cutoffs=[100./3., 200.
     return normalize(model, all_bases, count_base)
 
 
-
+#
+# normalize the counts in (for model building)
+#
 def normalize(model, all_bases, count_base):    
 
     for key in ['lower', 'upper']:
@@ -156,6 +169,9 @@ def normalize(model, all_bases, count_base):
     return model['log_divided']
 
 
+#
+# score a sequence using the dinucleotide method
+#
 def score_a_sequence(model, seq, normalize_by_length=False):
     score = 0.
     for i in range(0, len(seq) - 1):
@@ -167,6 +183,9 @@ def score_a_sequence(model, seq, normalize_by_length=False):
         score = score / float(len(seq) - 1)
     return score
 
+#
+# score a data frame using the dinucleotide method
+#
 def score_df(model, df, sequence_col_name, normalize_by_length=False):
     score_list = []
     for seq in df[sequence_col_name]:
@@ -174,8 +193,9 @@ def score_df(model, df, sequence_col_name, normalize_by_length=False):
         score_list.append(score)
     return score_list
 
-
-
+#
+# cross-validation for the dinucleotide method
+#
 def v_fold(y_col_name, sequence_col_name, df, v_fold_cycles, count_base=0., normalize_by_length=False):
     print 'Markov v-fold:'
     spearman_list = []
@@ -200,7 +220,9 @@ def v_fold(y_col_name, sequence_col_name, df, v_fold_cycles, count_base=0., norm
 
     return spearman_list
 
-
+#
+# produce an HTML representation of the model
+#
 def model_to_HTML(model, rounding_amount):
 
     gradient = ['#FDD3F2', '#F6BDEB', '#F0A8E5', '#EA93DE', '#E47ED8', '#DE69D1', '#D754CB', '#D13FC4', '#CB2ABE', '#C515B7', '#BF00B1']
@@ -238,21 +260,9 @@ def model_to_HTML(model, rounding_amount):
     return html
 
 
-
-
-def example():
-    import pandas as pd
-    import pprint as pp
-    df = pd.read_csv('/rhome/emily/swteam/emily/machine_learning/output/matched.csv')
-    model = build_markov_model(df, 'e2e', 'primer', count_base=1.)
-    pp.pprint(model)
-
-    print
-    print score_a_sequence(model, 'AGTTTGUTGCTTUCGCGCGTUTG')
-
-
-
-
+#
+# test for bias in dinucleotide score normalization by length
+#
 def test_for_bias_in_dinucleotide_score_normalization_by_length():
 
     # CONCLUSION
