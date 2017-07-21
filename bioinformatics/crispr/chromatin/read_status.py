@@ -266,8 +266,7 @@ results = ml.v_fold(ml.linear_wrapper, y, X, number_of_v_fold_cycles, verbose=Tr
 
 sp_list = []
 for sp in results['spearmanr_list']:
-    if sp[1] <= 0.05:  # crude!
-        sp_list.append(sp[0])
+    sp_list.append(sp[0])
 
 
 
