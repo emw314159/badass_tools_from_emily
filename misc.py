@@ -5,8 +5,6 @@
 import math
 
 
-
-
 #
 # normalize a list between 0. and 1.
 #
