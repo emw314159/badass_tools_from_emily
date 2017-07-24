@@ -197,4 +197,19 @@ for i in sorted(unique_Industry.keys()):
     cmd = 'CREATE (i:INDUSTRY {id : \'' + i + '\'});'
     f.write(cmd + '\n')
 
+#
+# index nodes
+#
+f.write('CREATE INDEX ON :EXCHANGE(id);' + '\n')
+f.write('CREATE INDEX ON :IPO_YEAR(id);' + '\n')
+f.write('CREATE INDEX ON :SECTOR(id);' + '\n')
+f.write('CREATE INDEX ON :INDUSTRY(id);' + '\n')
 
+
+
+
+
+#
+# close the Cypher commands file
+#
+f.close()
