@@ -212,14 +212,37 @@ for symbol, name, float_market_cap in zip(df.index, df['Name'], df['float_market
 #
 # index nodes
 #
+f.write('CREATE INDEX ON :COMPANY(id);' + '\n')
 f.write('CREATE INDEX ON :EXCHANGE(id);' + '\n')
 f.write('CREATE INDEX ON :IPO_YEAR(id);' + '\n')
 f.write('CREATE INDEX ON :SECTOR(id);' + '\n')
 f.write('CREATE INDEX ON :INDUSTRY(id);' + '\n')
 
 
+#
+# add relationships
+#
+for symbol, ipo_year, sector, industry in zip(df.index, df['IPOyear'], df['Sector'], df['industry']):
 
+    if ipo_year != None:
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (y:IPO_YEAR {id : ' + ipo_year + '}) CREATE UNIQUE (c)-[HAS_IPO_YEAR]-[y];'
+        f.write(cmd + '\n')
 
+    if sector != None:
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (s:SECTOR {id : \'' + sector + '\'}) CREATE UNIQUE (c)-[HAS_SECTOR]-[s];'
+        f.write(cmd + '\n')
+
+    if industry != None:
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (i:INDUSTRY {id : \'' + industry + '\'}) CREATE UNIQUE (c)-[HAS_INDUSTRY]-[i];'
+        f.write(cmd + '\n')
+
+#
+# add exchanges
+#
+for ex in sorted(exchanges.keys()):
+    for symbol in exchanges[ex]:
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (e:EXCHANGE {id : \'' + ex + '\'}) CREATE UNIQUE (c)-[HAS_EXCHANGE]-[e];'
+        f.write(cmd + '\n')
 
 #
 # close the Cypher commands file
