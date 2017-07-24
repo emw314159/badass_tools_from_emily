@@ -119,3 +119,82 @@ for ticker in sorted(symbols.keys()):
         print
 print
 
+#
+# find unique values
+#
+unique_exchanges = sorted(exchanges.keys())
+
+unique_IPOyear = {}
+for iy in df['IPOyear']:
+    if iy != None:
+        unique_IPOyear[iy] = None
+
+unique_Sector = {}
+for s in df['Sector']:
+    if s != None:
+        unique_Sector[s] = None
+
+unique_Industry = {}
+for i in df['industry']:
+    if i != None:
+        unique_Industry[i] = None
+
+#
+# prepare MarketCap
+#
+new_market_cap = []
+for mc in df['MarketCap']:
+    value = None
+    if mc != None:    
+        mc = mc.replace('$', '')
+
+        if mc[-1].isalpha():
+            order = mc[-1]
+            value = float(mc[0:-1])
+        else:
+            value = float(mc)
+
+        if order == 'B':
+            value = value * 1000000000.
+        elif order == 'M':
+            value = value * 1000000.
+
+    new_market_cap.append(value)
+
+df['float_market_cap'] = new_market_cap
+
+
+#
+# open file for writing cypher commands
+#
+f = open(output_directory + '/cypher_commands.txt', 'w')
+
+#
+# write Cypher commands for exchange nodes
+#
+for ex in sorted(unique_exchanges):
+    cmd = 'CREATE (ex:EXCHANGE {id : \'' + ex + '\'});'
+    f.write(cmd + '\n')
+
+#
+# write Cypher commands for IPOyear nodes
+#
+for iy in sorted(unique_IPOyear.keys()):
+    cmd = 'CREATE (ipo:IPO_YEAR {id : ' + str(iy) + '});'
+    f.write(cmd + '\n')
+
+#
+# write Cypher commands for sector nodes
+#
+for s in sorted(unique_Sector.keys()):
+    cmd = 'CREATE (s:SECTOR {id : \'' + s + '\'});'
+    f.write(cmd + '\n')
+
+#
+# write Cypher commands for industry nodes
+#
+for i in sorted(unique_Industry.keys()):
+    cmd = 'CREATE (i:INDUSTRY {id : \'' + i + '\'});'
+    f.write(cmd + '\n')
+
+
