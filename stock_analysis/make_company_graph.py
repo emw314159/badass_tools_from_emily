@@ -6,6 +6,7 @@ import sys
 import pandas as pd
 import pprint as pp
 import json
+from numpy import isnan
 
 #
 # urls
@@ -173,7 +174,7 @@ f = open(output_directory + '/cypher_commands.txt', 'w')
 # write Cypher commands for exchange nodes
 #
 for ex in sorted(unique_exchanges):
-    cmd = 'CREATE (ex:EXCHANGE {id : \'' + ex + '\'});'
+    cmd = 'CREATE (ex:EXCHANGE {id : \'' + ex.replace('\'', '\\\'') + '\'});'
     f.write(cmd + '\n')
 
 #
@@ -187,15 +188,26 @@ for iy in sorted(unique_IPOyear.keys()):
 # write Cypher commands for sector nodes
 #
 for s in sorted(unique_Sector.keys()):
-    cmd = 'CREATE (s:SECTOR {id : \'' + s + '\'});'
+    cmd = 'CREATE (s:SECTOR {id : \'' + s.replace('\'', '\\\'') + '\'});'
     f.write(cmd + '\n')
 
 #
 # write Cypher commands for industry nodes
 #
 for i in sorted(unique_Industry.keys()):
-    cmd = 'CREATE (i:INDUSTRY {id : \'' + i + '\'});'
+    cmd = 'CREATE (i:INDUSTRY {id : \'' + i.replace('\'', '\\\'') + '\'});'
     f.write(cmd + '\n')
+
+#
+# write Cypher commands for company nodes
+#
+for symbol, name, float_market_cap in zip(df.index, df['Name'], df['float_market_cap']):
+    cmd = 'CREATE (c:COMPANY {id : \'' + symbol + '\'}) SET c.name = \'' + name.replace('\'', '\\\'') + '\''
+    if not isnan(float_market_cap):
+        cmd += ' AND c.market_cap = ' + str(float_market_cap)
+    cmd += ';'
+    f.write(cmd + '\n')
+    
 
 #
 # index nodes
