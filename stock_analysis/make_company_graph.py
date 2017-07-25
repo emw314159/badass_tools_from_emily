@@ -171,41 +171,55 @@ df['float_market_cap'] = new_market_cap
 f = open(output_directory + '/cypher_commands.txt', 'w')
 
 #
+# write commands to delete
+#
+f.write('MATCH (ex:EXCHANGE)-[r]-() DELETE ex, r;' + '\n')
+f.write('MATCH (ipo:IPO_YEAR)-[r]-() DELETE ipo, r;' + '\n')
+f.write('MATCH (s:SECTOR)-[r]-() DELETE s, r;' + '\n')
+f.write('MATCH (i:INDUSTRY)-[r]-() DELETE i, r;' + '\n')
+f.write('MATCH (c:COMPANY)-[r]-() DELETE c, r;' + '\n')
+f.write('MATCH (ex:EXCHANGE) DELETE ex;' + '\n')
+f.write('MATCH (ipo:IPO_YEAR) DELETE ipo;' + '\n')
+f.write('MATCH (s:SECTOR) DELETE s;' + '\n')
+f.write('MATCH (i:INDUSTRY) DELETE i;' + '\n')
+f.write('MATCH (c:COMPANY) DELETE c;' + '\n')
+
+#
 # write Cypher commands for exchange nodes
 #
 for ex in sorted(unique_exchanges):
-    cmd = 'CREATE (ex:EXCHANGE {id : \'' + ex.replace('\'', '\\\'') + '\'});'
+    cmd = 'CREATE (ex:EXCHANGE {id : \'' + ex.replace('\'', '\\\'') + '\'}) RETURN ex;'
     f.write(cmd + '\n')
 
 #
 # write Cypher commands for IPOyear nodes
 #
 for iy in sorted(unique_IPOyear.keys()):
-    cmd = 'CREATE (ipo:IPO_YEAR {id : ' + str(iy) + '});'
+    cmd = 'CREATE (ipo:IPO_YEAR {id : ' + str(iy) + '}) RETURN ipo;'
     f.write(cmd + '\n')
 
 #
 # write Cypher commands for sector nodes
 #
 for s in sorted(unique_Sector.keys()):
-    cmd = 'CREATE (s:SECTOR {id : \'' + s.replace('\'', '\\\'') + '\'});'
+    cmd = 'CREATE (s:SECTOR {id : \'' + s.replace('\'', '\\\'') + '\'}) RETURN s;'
     f.write(cmd + '\n')
 
 #
 # write Cypher commands for industry nodes
 #
 for i in sorted(unique_Industry.keys()):
-    cmd = 'CREATE (i:INDUSTRY {id : \'' + i.replace('\'', '\\\'') + '\'});'
+    cmd = 'CREATE (i:INDUSTRY {id : \'' + i.replace('\'', '\\\'') + '\'}) RETURN i;'
     f.write(cmd + '\n')
 
 #
 # write Cypher commands for company nodes
 #
 for symbol, name, float_market_cap in zip(df.index, df['Name'], df['float_market_cap']):
-    cmd = 'CREATE (c:COMPANY {id : \'' + symbol + '\'}) SET c.name = \'' + name.replace('\'', '\\\'') + '\''
+    cmd = 'CREATE (c:COMPANY {id : \'' + symbol + '\', name : \'' + name.replace('\'', '\\\'') + '\''
     if not isnan(float_market_cap):
-        cmd += ' AND c.market_cap = ' + str(float_market_cap)
-    cmd += ';'
+        cmd += ', market_cap : toFloat("' + str(float_market_cap) + '")'
+    cmd += '}) RETURN c;'
     f.write(cmd + '\n')
     
 
@@ -225,15 +239,15 @@ f.write('CREATE INDEX ON :INDUSTRY(id);' + '\n')
 for symbol, ipo_year, sector, industry in zip(df.index, df['IPOyear'], df['Sector'], df['industry']):
 
     if ipo_year != None:
-        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (y:IPO_YEAR {id : ' + ipo_year + '}) CREATE UNIQUE (c)-[HAS_IPO_YEAR]-[y];'
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (y:IPO_YEAR {id : ' + ipo_year + '}) CREATE UNIQUE (c)-[r:HAS_IPO_YEAR]-(y) RETURN c, r, y;'
         f.write(cmd + '\n')
 
     if sector != None:
-        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (s:SECTOR {id : \'' + sector + '\'}) CREATE UNIQUE (c)-[HAS_SECTOR]-[s];'
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (s:SECTOR {id : \'' + sector + '\'}) CREATE UNIQUE (c)-[r:HAS_SECTOR]-(s) RETURN c, r, s;'
         f.write(cmd + '\n')
 
     if industry != None:
-        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (i:INDUSTRY {id : \'' + industry + '\'}) CREATE UNIQUE (c)-[HAS_INDUSTRY]-[i];'
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (i:INDUSTRY {id : \'' + industry + '\'}) CREATE UNIQUE (c)-[r:HAS_INDUSTRY]-(i) RETURN c, r, i;'
         f.write(cmd + '\n')
 
 #
@@ -241,7 +255,7 @@ for symbol, ipo_year, sector, industry in zip(df.index, df['IPOyear'], df['Secto
 #
 for ex in sorted(exchanges.keys()):
     for symbol in exchanges[ex]:
-        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (e:EXCHANGE {id : \'' + ex + '\'}) CREATE UNIQUE (c)-[HAS_EXCHANGE]-[e];'
+        cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (e:EXCHANGE {id : \'' + ex + '\'}) CREATE UNIQUE (c)-[r:HAS_EXCHANGE]-(e) RETURN c, r, e;'
         f.write(cmd + '\n')
 
 #
