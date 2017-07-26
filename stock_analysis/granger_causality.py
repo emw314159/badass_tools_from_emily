@@ -102,7 +102,6 @@ for i in symbol_list:
     print i
     for j in symbol_list:
         arg_list.append((i, j,))
-    break
 
 pairwise_causality = {}
 result = []
