@@ -51,13 +51,14 @@ if download_companies_by_name:
 
 else:
     df = pd.read_csv(output_directory + '/companies.csv', index_col='Symbol')
-    #df.index = df['Symbol']
-    #del(df['Symbol'])
+
 
 #
 # remove whitespace from indeces
 #
 df.index = [x.strip() for x in list(df.index)]
+
+
 
 
 #
@@ -84,7 +85,7 @@ else:
     with open(output_directory + '/exchanges.json') as f:
         exchanges = json.load(f)
 
-        
+
 #
 # map symbol to name
 #
@@ -92,12 +93,10 @@ symbol_to_name = {}
 for symbol, name in zip(df.index, df['Name']):
     if not symbol_to_name.has_key(symbol):
         symbol_to_name[symbol] = {}
-    symbol_to_name[symbol][name] = None
+    symbol_to_name[symbol][name.strip()] = None
 
 with open(output_directory + '/symbol_to_name.json', 'w') as f:
     json.dump(symbol_to_name, f)
-
-
 
 #
 # see if stock tickers overlap
@@ -120,10 +119,15 @@ for ticker in sorted(symbols.keys()):
         print
 print
 
+
 #
 # find unique values
 #
 unique_exchanges = sorted(exchanges.keys())
+
+unique_name = {}
+for n in df['Name']:
+    unique_name[n] = None
 
 unique_IPOyear = {}
 for iy in df['IPOyear']:
@@ -178,11 +182,13 @@ f.write('MATCH (ipo:IPO_YEAR)-[r]-() DELETE ipo, r;' + '\n')
 f.write('MATCH (s:SECTOR)-[r]-() DELETE s, r;' + '\n')
 f.write('MATCH (i:INDUSTRY)-[r]-() DELETE i, r;' + '\n')
 f.write('MATCH (c:COMPANY)-[r]-() DELETE c, r;' + '\n')
+f.write('MATCH (c:COMPANY_NAME)-[r]-() DELETE c, r;' + '\n')
 f.write('MATCH (ex:EXCHANGE) DELETE ex;' + '\n')
 f.write('MATCH (ipo:IPO_YEAR) DELETE ipo;' + '\n')
 f.write('MATCH (s:SECTOR) DELETE s;' + '\n')
 f.write('MATCH (i:INDUSTRY) DELETE i;' + '\n')
 f.write('MATCH (c:COMPANY) DELETE c;' + '\n')
+f.write('MATCH (c:COMPANY_NAME) DELETE c;' + '\n')
 
 #
 # write Cypher commands for exchange nodes
@@ -213,10 +219,18 @@ for i in sorted(unique_Industry.keys()):
     f.write(cmd + '\n')
 
 #
+# write Cypher commands for company name nades
+#
+for n in sorted(unique_name.keys()):
+    cmd = 'CREATE (n:COMPANY_NAME {id : \'' + n.replace('\'', '\\\'') + '\'}) RETURN n;'
+    f.write(cmd + '\n')
+    
+
+#
 # write Cypher commands for company nodes
 #
 for symbol, name, float_market_cap in zip(df.index, df['Name'], df['float_market_cap']):
-    cmd = 'CREATE (c:COMPANY {id : \'' + symbol + '\', name : \'' + name.replace('\'', '\\\'') + '\''
+    cmd = 'CREATE (c:COMPANY {id : \'' + symbol + '\''
     if not isnan(float_market_cap):
         cmd += ', market_cap : toFloat("' + str(float_market_cap) + '")'
     cmd += '}) RETURN c;'
@@ -227,6 +241,7 @@ for symbol, name, float_market_cap in zip(df.index, df['Name'], df['float_market
 # index nodes
 #
 f.write('CREATE INDEX ON :COMPANY(id);' + '\n')
+f.write('CREATE INDEX ON :COMPANY_NAME(id);' + '\n')
 f.write('CREATE INDEX ON :EXCHANGE(id);' + '\n')
 f.write('CREATE INDEX ON :IPO_YEAR(id);' + '\n')
 f.write('CREATE INDEX ON :SECTOR(id);' + '\n')
@@ -257,6 +272,14 @@ for ex in sorted(exchanges.keys()):
     for symbol in exchanges[ex]:
         cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (e:EXCHANGE {id : \'' + ex + '\'}) CREATE UNIQUE (c)-[r:HAS_EXCHANGE]-(e) RETURN c, r, e;'
         f.write(cmd + '\n')
+
+#
+# add symbol to name
+#
+for symbol, name in zip(df.index, df['Name']):
+    cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (n:COMPANY_NAME {id: \'' + name + '\'}) CREATE UNIQUE (c)-[r:HAS_COMPANY_NAME]-(n) RETURN c, r, n;'
+    f.write(cmd + '\n')
+
 
 #
 # close the Cypher commands file
