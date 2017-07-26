@@ -25,5 +25,7 @@ for i, line in enumerate(f):
     session.run(line)
 f.close()
 
+session.close()
+
 
 
