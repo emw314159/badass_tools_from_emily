@@ -2,20 +2,21 @@
 # what this does
 #
 """
-This program loads the Cypher content produced by "make_company_graph.py" into the database.
+This program loads the Cypher content in ARGV[1] into the database.
 """
 
 #
 # load useful libraries
 #
 from neo4j.v1 import GraphDatabase, basic_auth
+import sys
 
 #
 # user settings
 #
 user = 'neo4j'
 password = 'aoeuI111'
-input_filename = 'output/cypher_commands.txt'
+input_filename = sys.argv[1]
 
 #
 # start Neo4j connection

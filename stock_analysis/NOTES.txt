@@ -8,7 +8,8 @@ From my blog post:
 From my effort to create a graph database:
 
      python make_company_graph.py
-     python load_company_graph.py
+     python load_cypher.py output/cypher_commands.txt
      python get_quotes.py
      python granger_causality.py
+     python load_cypher.py output/cypher_commands_granger_volume_adj_close.txt
 
