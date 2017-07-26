@@ -30,7 +30,7 @@ for close in sorted(pairwise.keys()):
         for lag in sorted(pairwise[close][volume].keys()):
             lag = int(lag)
             p_log_10 = pairwise[close][volume][str(lag)]
-            cmd = 'MATCH (volume:COMPANY {id : \'' + volume + '\'}), (close:COMPANY {id : \'' + close + '\'}) CREATE UNIQUE (volume)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]-(close) SET r.lag = ' + str(lag) + ' AND r.p_log_10 = ' + str(p_log_10) + ' RETURN volume, close, r;'
+            cmd = 'MATCH (volume:COMPANY {id : \'' + volume + '\'}), (close:COMPANY {id : \'' + close + '\'}) CREATE UNIQUE (volume)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE {lag : ' + str(lag) + ', p_log_10 : ' + str(p_log_10) + '}]-(close) RETURN volume, close, r;'
             f.write(cmd + '\n')
 
 #
