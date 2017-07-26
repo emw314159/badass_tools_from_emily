@@ -1,4 +1,11 @@
 #
+# what this does
+#
+"""
+This program computes pairwise granger causality between stocks (including between a stock and itself) based on the data retrieved by "get_quotes.py". The test is whether volume granger-causes adjusted close.
+"""
+
+#
 # load useful libraries
 #
 import pickle

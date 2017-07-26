@@ -1,4 +1,11 @@
 #
+# what this does
+#
+"""
+Using data from "make_company_graph.py", this program extracts stock price and volume information using Yahoo!'s API. Saves the data to pickled files.
+"""
+
+#
 # load useful libraries
 #
 import pandas_datareader as pdr
@@ -12,6 +19,8 @@ import glob
 #
 output_directory = 'output'
 quote_data_directory = 'quote_data'
+start = datetime(2000, 1, 1)
+end = datetime(2017, 7, 25)
 
 #
 # load symbols
@@ -48,7 +57,7 @@ for symbol in symbol_list:
     print symbol
 
     try:
-        df = pdr.get_data_yahoo(symbols=symbol, start=datetime(2000, 1, 1), end=datetime(2017, 7, 25))
+        df = pdr.get_data_yahoo(symbols=symbol, start=start, end=end)
         with open(quote_data_directory + '/' + symbol + '.pickle', 'w') as f:
             pickle.dump(df, f)
     except:

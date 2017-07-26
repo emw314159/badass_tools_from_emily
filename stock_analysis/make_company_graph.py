@@ -1,3 +1,9 @@
+#
+# what this does
+#
+"""
+Using information published online by Nasdaq, this program builds the Neo4j Cypher commands necessary to build a graph database of companies, industries, etc. that I will leverage later.
+"""
 
 #
 # import useful libraries

@@ -1,4 +1,11 @@
 #
+# what this does
+#
+"""
+This program loads the Cypher content produced by "make_company_graph.py" into the database.
+"""
+
+#
 # load useful libraries
 #
 from neo4j.v1 import GraphDatabase, basic_auth
