@@ -86,25 +86,25 @@ if calculate_events:
             lag_5 = df.ix[df.index[loc - 5],:]['Percent Difference Adj Close']
 
             events.append({
-                    'mover_percent_diff_volume' : df.ix[i,:]['Percent Difference Volume'],
-                    'mover_symbol' : symbol,
+                    'volume_percent_diff_volume' : df.ix[i,:]['Percent Difference Volume'],
+                    'volume_symbol' : symbol,
                     'weekday' : weekday_map[weekday],
-                    'mover_percent_52_week_high' : percent_52_week_high,
-                    'mover_percent_12_week_high' : percent_12_week_high,
-                    'mover_percent_4_week_high' : percent_4_week_high,
-                    'mover_lag_0' : lag_0,
-                    'mover_lag_1' : lag_1,
-                    'mover_lag_2' : lag_2,
-                    'mover_lag_3' : lag_3,
-                    'mover_lag_4' : lag_4,
-                    'mover_lag_5' : lag_5,
+                    'volume_percent_52_week_high' : percent_52_week_high,
+                    'volume_percent_12_week_high' : percent_12_week_high,
+                    'volume_percent_4_week_high' : percent_4_week_high,
+                    'volume_lag_0' : lag_0,
+                    'volume_lag_1' : lag_1,
+                    'volume_lag_2' : lag_2,
+                    'volume_lag_3' : lag_3,
+                    'volume_lag_4' : lag_4,
+                    'volume_lag_5' : lag_5,
                     'date' : i,
                     })
 
     with open(output_directory + '/events.pickle', 'w') as f:
         pickle.dump(events, f)
     with open(output_directory + '/symbols_with_events.pickle', 'w') as f:
-        pickle.dump(symbols_with_events, f)
+        pickle.dump(symbols_with_event, f)
 
 else:
     with open(output_directory + '/events.pickle') as f:
@@ -115,19 +115,96 @@ else:
 #
 # get content from database
 #
-driver = GraphDatabase.driver('bolt://localhost:7687', auth=basic_auth(user, password))
-session = driver.session()
-
 if calculate_database:
-    for symbol in symbols_with_event[0:15]:
-        cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY) WHERE r.lag = ' + str(database_lag) + ' AND volume.id = ' + symbol + ' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10;'
+    driver = GraphDatabase.driver('bolt://localhost:7687', auth=basic_auth(user, password))
+    session = driver.session()
+    database_content = {}
+    for symbol in sorted(symbols_with_event.keys())[0:15]:
+        cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY), (volume)-[rvs:HAS_SECTOR]-(vs:SECTOR), (close)-[rcs:HAS_SECTOR]-(cs:SECTOR), (volume)-[rvi:HAS_INDUSTRY]-(vi:INDUSTRY), (close)-[rci:HAS_INDUSTRY]-(ci:INDUSTRY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10, vs.id AS volume_sector, cs.id AS close_sector, vi.id AS volume_industry, ci.id AS close_industry;'
+
         result = session.run(cmd)
 
-        print
-        print result
+        for record in result:
+            volume = record['volume']
+            if not database_content.has_key(volume):
+                database_content[volume] = []
+            database_content[volume].append({
+                    'close' : record['close'],
+                    'p_log_10' : record['p_log_10'],
+                    'volume_sector' : record['volume_sector'],
+                    'close_sector' : record['close_sector'],
+                    'volume_industry' : record['volume_industry'],
+                    'close_industry' : record['close_industry'],
+                    })
 
-# add in_same_sector
-# add in_same_industry
+    with open(output_directory + '/database_content.pickle', 'w') as f:
+        pickle.dump(database_content, f)
+
+else:
+    with open(output_directory + '/database_content.pickle') as f:
+        database_content = pickle.load(f)
+
+#
+# match
+#
+new_events = []
+for e in events:
+    volume = e['volume_symbol']
+    if database_content.has_key(volume):
+         for hit in database_content[volume]:
+             new_e = e.copy() 
+             for key in hit.keys():
+                 new_e[key] = hit[key]
+             new_events.append(new_e)
+
+
+#
+# connect to close data
+#
+close_map = {}
+for e in new_events:
+    close = e['close']
+    if not close_map.has_key(close):
+        close_map[close] = []
+    close_map[close].append({'date' : e['date'], 'found' : False})
+
+for close in close_map.keys():
+    df = load_and_prepare_stock_data(close)
+    start_date = df.index[0]
+    end_date = df.index[-1]
+
+    for i_dict in close_map[close]:
+        idx = i_dict['date']
+        if idx == end_date:  continue
+        if idx + dt_52_week < start_date:  continue
+        i_dict['found'] = True
+
+        percent_52_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_52_week):(idx+dt_1_day),:]['Adj Close'])
+        percent_12_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_12_week):(idx+dt_1_day),:]['Adj Close'])
+        percent_4_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_4_week):(idx+dt_1_day),:]['Adj Close'])
+
+        loc = list(df.index).index(idx)
+        lag_0 = df.ix[df.index[loc - 0],:]['Percent Difference Adj Close']
+        lag_1 = df.ix[df.index[loc - 1],:]['Percent Difference Adj Close']
+        lag_2 = df.ix[df.index[loc - 2],:]['Percent Difference Adj Close']
+        lag_3 = df.ix[df.index[loc - 3],:]['Percent Difference Adj Close']
+        lag_4 = df.ix[df.index[loc - 4],:]['Percent Difference Adj Close']
+        lag_5 = df.ix[df.index[loc - 5],:]['Percent Difference Adj Close']
+        
+
+        i_dict['close_percent_diff_volume'] = df.ix[idx,:]['Percent Difference Volume']
+        i_dict['close_percent_52_week_high'] = percent_52_week_high
+        i_dict['close_percent_12_week_high'] = percent_12_week_high
+        i_dict['close_percent_4_week_high'] = percent_4_week_high
+        i_dict['close_lag_0'] = lag_0
+        i_dict['close_lag_1'] = lag_1
+        i_dict['close_lag_2'] = lag_2
+        i_dict['close_lag_3'] = lag_3
+        i_dict['close_lag_4'] = lag_4
+        i_dict['close_lag_5'] = lag_5
+
+pp.pprint(close_map)
+
 
 
 
