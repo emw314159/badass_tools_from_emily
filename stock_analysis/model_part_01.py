@@ -126,6 +126,9 @@ if calculate_database:
         print
         print result
 
+# add in_same_sector
+# add in_same_industry
+
 
 
 
