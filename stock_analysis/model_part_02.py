@@ -89,6 +89,9 @@ y, X = ml.categorize(formula, factor_options, df_to_use)
 #
 results = ml.v_fold(ml.logit_wrapper, y, X, number_of_vfolds_to_run)
 fpr, tpr, roc_auc = ml.plot_a_representative_ROC_plot(results, 'ROC Curve for Stock Prediction', output_directory + '/ROC.png')
+print
+pp.pprint(results['auc_list'])
+print
 
 #
 # figure out where 80% TPR is
