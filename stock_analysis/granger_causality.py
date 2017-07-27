@@ -23,10 +23,16 @@ from multiprocessing import Process, Pool
 #
 output_directory = 'output'
 quote_data_directory = 'quote_data'
+granger_results_directory = 'granger_computations'
 threshold = 0.05
 number_of_lags = 5
 number_of_workers_in_pool = 20
 chunksize = 10
+
+#
+# get list of symbols we already have computations for
+#
+already_have_list = sorted([x.split('/')[1].replace('.json', '') for x in glob.glob(granger_results_directory + '/*.json')])
 
 #
 # get symbol list
@@ -100,34 +106,37 @@ def wrapper(ij):
 #
 pool = Pool(processes=number_of_workers_in_pool)
 
-arg_list = []
-for i in symbol_list:
+
+arg_dict = {}
+for i in symbol_list[0:2]:
+    if i in already_have_list:  continue
+
+    arg_dict[i] = []
     for j in symbol_list:
-        arg_list.append((i, j,))
+        arg_dict[i].append((i, j,))
 
-pairwise_causality = {}
-result = []
+for symbol in sorted(arg_dict.keys()):
+    arg_list = arg_dict[symbol]
+    pairwise_causality = {}
+    result = []
 
-it = pool.imap_unordered(wrapper, arg_list, chunksize=chunksize)
+    it = pool.imap_unordered(wrapper, arg_list, chunksize=chunksize)
 
-current = it.next()
-while current:
-    i, j, results = current
-    print i, j
-    if results != {}:
-        if not pairwise_causality.has_key(i):
-            pairwise_causality[i] = {}
-        pairwise_causality[i][j] = results
-    try:
-        current = it.next()
-    except:
-        break
+    current = it.next()
+    while current:
+        i, j, results = current
+        if results != {}:
+            pairwise_causality[j] = results
+        try:
+            current = it.next()
+        except:
+            break
 
-#
-# save pairwise causalitity
-#
-with open(output_directory + '/pairwise_causality.json', 'w') as f:
-    json.dump(pairwise_causality, f)
+    #
+    # save pairwise causalitity
+    #
+    with open(granger_results_directory + '/' + symbol + '.json', 'w') as f:
+        json.dump(pairwise_causality, f)
 
 
 
