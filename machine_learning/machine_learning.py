@@ -242,7 +242,7 @@ def plot_a_representative_ROC_plot(results_from_v_fold, title, output_file):
     plt.savefig(output_file)
     plt.close()
 
-
+    return fpr, tpr, roc_auc
 
 def output_libsvm_unscaled_from_df(df, formula, output_file, classification=False):
     y, X = dmatrices(formula, df, return_type = 'dataframe')
