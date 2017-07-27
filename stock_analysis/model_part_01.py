@@ -78,6 +78,7 @@ if calculate_events:
 
             loc = list(df.index).index(i)
             weekday = i.weekday()
+            lag_0 = df.ix[df.index[loc - 0],:]['Percent Difference Adj Close']
             lag_1 = df.ix[df.index[loc - 1],:]['Percent Difference Adj Close']
             lag_2 = df.ix[df.index[loc - 2],:]['Percent Difference Adj Close']
             lag_3 = df.ix[df.index[loc - 3],:]['Percent Difference Adj Close']
@@ -91,6 +92,7 @@ if calculate_events:
                     'mover_percent_52_week_high' : percent_52_week_high,
                     'mover_percent_12_week_high' : percent_12_week_high,
                     'mover_percent_4_week_high' : percent_4_week_high,
+                    'mover_lag_0' : lag_0,
                     'mover_lag_1' : lag_1,
                     'mover_lag_2' : lag_2,
                     'mover_lag_3' : lag_3,
