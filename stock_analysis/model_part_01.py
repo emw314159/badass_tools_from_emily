@@ -15,7 +15,7 @@ import pandas as pd
 #
 output_directory = 'output'
 quote_data_directory = 'quote_data'
-volume_threshold = 100000 # 1000000
+volume_threshold = 1000000
 database_lags = 2
 calculate_events = True
 calculate_database = True
@@ -71,7 +71,7 @@ if calculate_events:
         idx = df.ix[df['Percent Difference Volume'] >= volume_threshold, :].index
         for i in idx:
             symbols_with_event[symbol] = None
-            if i == end_date:  continue
+            if i >= end_date + dt_1_day:  continue
             if i + dt_52_week < start_date:  continue
 
             percent_52_week_high = df.ix[i,:]['Adj Close'] / max(df.ix[(i+dt_52_week):(i+dt_1_day),:]['Adj Close'])
@@ -178,7 +178,7 @@ if calculate_match:
 
         for i_dict in close_map[close]:
             idx = i_dict['date']
-            if idx == end_date:  continue
+            if idx >= end_date + dt_1_day:  continue
             if idx + dt_52_week < start_date:  continue
             i_dict['found'] = True
 
@@ -187,6 +187,8 @@ if calculate_match:
             percent_4_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_4_week):(idx+dt_1_day),:]['Adj Close'])
 
             loc = list(df.index).index(idx)
+            lead_1 = df.ix[df.index[loc + 1],:]['Percent Difference Adj Close']
+            lead_2 = df.ix[df.index[loc + 2],:]['Percent Difference Adj Close']
             lag_0 = df.ix[df.index[loc - 0],:]['Percent Difference Adj Close']
             lag_1 = df.ix[df.index[loc - 1],:]['Percent Difference Adj Close']
             lag_2 = df.ix[df.index[loc - 2],:]['Percent Difference Adj Close']
@@ -199,6 +201,8 @@ if calculate_match:
             i_dict['close_percent_52_week_high'] = percent_52_week_high
             i_dict['close_percent_12_week_high'] = percent_12_week_high
             i_dict['close_percent_4_week_high'] = percent_4_week_high
+            i_dict['close_lead_1'] = lead_1
+            i_dict['close_lead_2'] = lead_2
             i_dict['close_lag_0'] = lag_0
             i_dict['close_lag_1'] = lag_1
             i_dict['close_lag_2'] = lag_2
