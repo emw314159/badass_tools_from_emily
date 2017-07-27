@@ -102,7 +102,6 @@ pool = Pool(processes=number_of_workers_in_pool)
 
 arg_list = []
 for i in symbol_list:
-    print i
     for j in symbol_list:
         arg_list.append((i, j,))
 
@@ -114,6 +113,7 @@ it = pool.imap_unordered(wrapper, arg_list, chunksize=chunksize)
 current = it.next()
 while current:
     i, j, results = current
+    print i, j
     if results != {}:
         if not pairwise_causality.has_key(i):
             pairwise_causality[i] = {}
