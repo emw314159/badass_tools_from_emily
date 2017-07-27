@@ -15,7 +15,7 @@ import pandas as pd
 #
 output_directory = 'output'
 quote_data_directory = 'quote_data'
-volume_threshold = 1000000
+volume_threshold = 500000
 database_lags = 2
 calculate_events = True
 calculate_database = True
