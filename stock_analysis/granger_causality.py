@@ -47,6 +47,9 @@ def wrapper(ij):
         percent_diff = [NaN]
         percent_diff.extend( [((j - i) / i) * 100. for i, j in zip(df['Adj Close'][0:-1], df['Adj Close'][1:])] )
         df['Percent Difference Adj Close'] = percent_diff
+        percent_diff = [NaN]
+        percent_diff.extend( [((j - i + 1) / (i + 1)) * 100. for i, j in zip(df['Volume'][0:-1], df['Volume'][1:])] )
+        df['Percent Difference Volume'] = percent_diff
         return df
 
     #
@@ -79,8 +82,8 @@ def wrapper(ij):
         df = pd.merge(df_i, df_j, left_index=True, right_index=True)
 
         for col in [
-            'Open_x', 'High_x', 'Low_x', 'Close_x', 'Adj Close_x', 'Volume_x',
-            'Open_y', 'Close_y', 'High_y', 'Low_y', 'Adj Close_y', 'Percent Difference Adj Close_y']:
+            'Open_x', 'High_x', 'Low_x', 'Close_x', 'Adj Close_x', 'Volume_x', 'Percent Difference Volume_x',
+            'Open_y', 'Close_y', 'High_y', 'Low_y', 'Adj Close_y', 'Percent Difference Adj Close_y', 'Volume_y']:
             del(df[col])
 
         array_to_test = df.ix[1:, :].as_matrix()
