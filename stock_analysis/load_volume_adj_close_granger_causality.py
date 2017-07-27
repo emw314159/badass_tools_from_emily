@@ -4,17 +4,18 @@
 #
 import json
 import pprint as pp
+import glob
 
 #
 # user settings
 #
 output_directory = 'output'
+granger_results_directory = 'granger_computations'
 
 #
 # load data
 #
-with open(output_directory + '/pairwise_causality.json') as f:
-    pairwise = json.load(f)
+close_list = sorted([x.split('/')[1].replace('.json', '') for x in glob.glob(granger_results_directory + '/*.json')])
 
 #
 # start cypher file and eliminate relationships
@@ -25,11 +26,15 @@ f.write('MATCH ()-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]-() DELETE r;' + '\n')
 #
 # build cypher commands
 #
-for close in sorted(pairwise.keys()):
-    for volume in sorted(pairwise[close].keys()):
-        for lag in sorted(pairwise[close][volume].keys()):
+for close in close_list:
+
+    with open(granger_results_directory + '/' + close + '.json') as fp:
+        pairwise = json.load(fp)
+
+    for volume in sorted(pairwise.keys()):
+        for lag in sorted(pairwise[volume].keys()):
             lag = int(lag)
-            p_log_10 = pairwise[close][volume][str(lag)]
+            p_log_10 = pairwise[volume][str(lag)]
             cmd = 'MATCH (volume:COMPANY {id : \'' + volume + '\'}), (close:COMPANY {id : \'' + close + '\'}) CREATE UNIQUE (close)<-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE {lag : ' + str(lag) + ', p_log_10 : ' + str(p_log_10) + '}]-(volume) RETURN volume, close, r;'
             f.write(cmd + '\n')
 
@@ -37,4 +42,4 @@ for close in sorted(pairwise.keys()):
 # close cypher file
 #
 f.close()
-
+            
