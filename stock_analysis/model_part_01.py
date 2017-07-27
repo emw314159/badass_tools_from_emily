@@ -8,16 +8,18 @@ from numpy import NaN, percentile
 import matplotlib.pyplot as plt
 from datetime import timedelta
 from neo4j.v1 import GraphDatabase, basic_auth
+import pandas as pd
 
 #
 # user settings
 #
 output_directory = 'output'
 quote_data_directory = 'quote_data'
-volume_threshold = 1000000
+volume_threshold = 100000 # 1000000
 database_lags = 2
-calculate_events = False
-calculate_database = False
+calculate_events = True
+calculate_database = True
+calculate_match = True
 
 user = 'neo4j'
 password = 'aoeuI111'
@@ -161,49 +163,93 @@ for e in events:
 #
 # connect to close data
 #
-close_map = {}
-for e in new_events:
-    close = e['close']
-    if not close_map.has_key(close):
-        close_map[close] = []
-    close_map[close].append({'date' : e['date'], 'found' : False})
+if calculate_match:
+    close_map = {}
+    for e in new_events:
+        close = e['close']
+        if not close_map.has_key(close):
+            close_map[close] = []
+        close_map[close].append({'date' : e['date'], 'found' : False})
 
-for close in close_map.keys():
-    df = load_and_prepare_stock_data(close)
-    start_date = df.index[0]
-    end_date = df.index[-1]
+    for close in close_map.keys():
+        df = load_and_prepare_stock_data(close)
+        start_date = df.index[0]
+        end_date = df.index[-1]
 
-    for i_dict in close_map[close]:
-        idx = i_dict['date']
-        if idx == end_date:  continue
-        if idx + dt_52_week < start_date:  continue
-        i_dict['found'] = True
+        for i_dict in close_map[close]:
+            idx = i_dict['date']
+            if idx == end_date:  continue
+            if idx + dt_52_week < start_date:  continue
+            i_dict['found'] = True
 
-        percent_52_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_52_week):(idx+dt_1_day),:]['Adj Close'])
-        percent_12_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_12_week):(idx+dt_1_day),:]['Adj Close'])
-        percent_4_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_4_week):(idx+dt_1_day),:]['Adj Close'])
+            percent_52_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_52_week):(idx+dt_1_day),:]['Adj Close'])
+            percent_12_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_12_week):(idx+dt_1_day),:]['Adj Close'])
+            percent_4_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_4_week):(idx+dt_1_day),:]['Adj Close'])
 
-        loc = list(df.index).index(idx)
-        lag_0 = df.ix[df.index[loc - 0],:]['Percent Difference Adj Close']
-        lag_1 = df.ix[df.index[loc - 1],:]['Percent Difference Adj Close']
-        lag_2 = df.ix[df.index[loc - 2],:]['Percent Difference Adj Close']
-        lag_3 = df.ix[df.index[loc - 3],:]['Percent Difference Adj Close']
-        lag_4 = df.ix[df.index[loc - 4],:]['Percent Difference Adj Close']
-        lag_5 = df.ix[df.index[loc - 5],:]['Percent Difference Adj Close']
-        
+            loc = list(df.index).index(idx)
+            lag_0 = df.ix[df.index[loc - 0],:]['Percent Difference Adj Close']
+            lag_1 = df.ix[df.index[loc - 1],:]['Percent Difference Adj Close']
+            lag_2 = df.ix[df.index[loc - 2],:]['Percent Difference Adj Close']
+            lag_3 = df.ix[df.index[loc - 3],:]['Percent Difference Adj Close']
+            lag_4 = df.ix[df.index[loc - 4],:]['Percent Difference Adj Close']
+            lag_5 = df.ix[df.index[loc - 5],:]['Percent Difference Adj Close']
 
-        i_dict['close_percent_diff_volume'] = df.ix[idx,:]['Percent Difference Volume']
-        i_dict['close_percent_52_week_high'] = percent_52_week_high
-        i_dict['close_percent_12_week_high'] = percent_12_week_high
-        i_dict['close_percent_4_week_high'] = percent_4_week_high
-        i_dict['close_lag_0'] = lag_0
-        i_dict['close_lag_1'] = lag_1
-        i_dict['close_lag_2'] = lag_2
-        i_dict['close_lag_3'] = lag_3
-        i_dict['close_lag_4'] = lag_4
-        i_dict['close_lag_5'] = lag_5
 
-pp.pprint(close_map)
+            i_dict['close_percent_diff_volume'] = df.ix[idx,:]['Percent Difference Volume']
+            i_dict['close_percent_52_week_high'] = percent_52_week_high
+            i_dict['close_percent_12_week_high'] = percent_12_week_high
+            i_dict['close_percent_4_week_high'] = percent_4_week_high
+            i_dict['close_lag_0'] = lag_0
+            i_dict['close_lag_1'] = lag_1
+            i_dict['close_lag_2'] = lag_2
+            i_dict['close_lag_3'] = lag_3
+            i_dict['close_lag_4'] = lag_4
+            i_dict['close_lag_5'] = lag_5
+
+    events_to_scrap = []
+    for eidx, e in enumerate(new_events):
+        date = e['date']
+        close = e['close']
+        matched = False
+        if close_map.has_key(close):
+            for i_dict in close_map[close]:
+                if i_dict['date'] == date:
+                    if i_dict['found']:
+                        for key in i_dict.keys():
+                            if not key in ['date', 'found']:
+                                e[key] = i_dict[key]
+                            matched = True
+        if not matched:
+            events_to_scrap.append(eidx)
+
+    final_events = []
+    for eidx, e in enumerate(new_events):
+        if not eidx in events_to_scrap:
+            final_events.append(e)
+
+#
+# add some similarity variables
+#
+for e in final_events:
+    e['same_industry'] = int(e['close_industry'] == e['volume_industry'])
+    e['same_sector'] = int(e['close_sector'] == e['volume_sector'])
+
+#
+# save dataframe
+#
+df = pd.DataFrame(final_events)
+df.to_csv(output_directory + '/data_for_model.csv', index=False)
+
+#
+# output index length
+#
+print
+print 'There are ' + str(len(df.index)) + ' entries in the dataframe.'
+print
+
+
+
+
 
 
 
