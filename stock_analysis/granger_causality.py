@@ -25,9 +25,9 @@ output_directory = 'output'
 quote_data_directory = 'quote_data'
 granger_results_directory = 'granger_computations'
 threshold = 0.05
-number_of_lags = 5
+number_of_lags = 2
 number_of_workers_in_pool = 20
-chunksize = 10
+chunksize = 100
 
 #
 # get list of symbols we already have computations for
@@ -108,7 +108,7 @@ pool = Pool(processes=number_of_workers_in_pool)
 
 
 arg_dict = {}
-for i in symbol_list[0:2]:
+for i in symbol_list:
     if i in already_have_list:  continue
 
     arg_dict[i] = []
@@ -125,6 +125,7 @@ for symbol in sorted(arg_dict.keys()):
     current = it.next()
     while current:
         i, j, results = current
+        print i, j
         if results != {}:
             pairwise_causality[j] = results
         try:
