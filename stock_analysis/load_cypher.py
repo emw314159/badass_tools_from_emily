@@ -30,6 +30,7 @@ session = driver.session()
 f = open(input_filename)
 for i, line in enumerate(f):
     line = line.strip()
+    print line
     session.run(line)
 f.close()
 

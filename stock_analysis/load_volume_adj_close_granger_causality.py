@@ -35,7 +35,7 @@ for close in close_list:
         for lag in sorted(pairwise[volume].keys()):
             lag = int(lag)
             p_log_10 = pairwise[volume][str(lag)]
-            cmd = 'MATCH (volume:COMPANY {id : \'' + volume + '\'}), (close:COMPANY {id : \'' + close + '\'}) CREATE UNIQUE (close)<-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE {lag : ' + str(lag) + ', p_log_10 : ' + str(p_log_10) + '}]-(volume) RETURN volume, close, r;'
+            cmd = 'MATCH (volume:COMPANY {id : \'' + volume + '\'}), (close:COMPANY {id : \'' + close + '\'}) CREATE (close)<-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE {lag : ' + str(lag) + ', p_log_10 : ' + str(p_log_10) + '}]-(volume) RETURN volume, close, r;'
             f.write(cmd + '\n')
 
 #
