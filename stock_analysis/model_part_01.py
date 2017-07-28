@@ -4,7 +4,7 @@
 import pickle
 import glob
 import pprint as pp
-from numpy import NaN, percentile
+from numpy import NaN, percentile, isnan
 import matplotlib.pyplot as plt
 from datetime import timedelta
 from neo4j.v1 import GraphDatabase, basic_auth
@@ -13,6 +13,8 @@ import pandas as pd
 import statsmodels.api as sm
 import itertools
 
+from scipy.stats import spearmanr
+
 #
 # user settings
 #
@@ -20,9 +22,9 @@ output_directory = 'output'
 quote_data_directory = 'quote_data'
 volume_threshold = 500000
 database_lags = 2
-calculate_events = False
-calculate_database = False
-calculate_match = False
+calculate_events = True
+calculate_database = True
+calculate_match = True
 
 user = 'neo4j'
 password = 'aoeuI111'
@@ -165,60 +167,82 @@ for e in events:
              new_events.append(new_e)
 
 
-#
-# ARIMA
-#
-def calculate_arima(y, idx):
-    # https://www.digitalocean.com/community/tutorials/a-guide-to-time-series-forecasting-with-arima-in-python-3
-    p = d = q = range(0, 2)
-    pdq = list(itertools.product(p, d, q))
-    seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
-    param_dict = {}
-    for param in pdq:
-        for param_seasonal in seasonal_pdq:
-            try:
-                mod = sm.tsa.statespace.SARIMAX(y,
-                                                order=param,
-                                                seasonal_order=param_seasonal,
-                                                enforce_stationarity=False,
-                                                enforce_invertibility=False)
+# #
+# # ARIMA
+# #
+# def calculate_arima(y, idx):
+#     # https://www.digitalocean.com/community/tutorials/a-guide-to-time-series-forecasting-with-arima-in-python-3
+#     p = d = q = range(0, 2)
+#     pdq = list(itertools.product(p, d, q))
+#     seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
+#     param_dict = {}
+#     for param in pdq:
+#         for param_seasonal in seasonal_pdq:
+#             try:
+#                 mod = sm.tsa.statespace.SARIMAX(y,
+#                                                 order=param,
+#                                                 seasonal_order=param_seasonal,
+#                                                 enforce_stationarity=False,
+#                                                 enforce_invertibility=False)
                 
-                results = mod.fit()
+#                 results = mod.fit()
 
-                param_dict[results.aic] = {
-                    'param' : param,
-                    'param_seasonal' : param_seasonal,
-                    }
-            except:
-                continue
+#                 param_dict[results.aic] = {
+#                     'param' : param,
+#                     'param_seasonal' : param_seasonal,
+#                     }
+#             except:
+#                 continue
 
-    if param_dict == {}:
-        return None, None
+#     if param_dict == {}:
+#         return None, None
 
-    aic = sorted(param_dict.keys())[0]
-    param = param_dict[aic]['param']
-    param_seasonal = param_dict[aic]['param_seasonal']
+#     aic = sorted(param_dict.keys())[0]
+#     param = param_dict[aic]['param']
+#     param_seasonal = param_dict[aic]['param_seasonal']
 
-    mod = sm.tsa.statespace.SARIMAX(y,
-                                    order=param,
-                                    seasonal_order=param_seasonal,
-                                    enforce_stationarity=False,
-                                    enforce_invertibility=False,
-                                    verbose=False)
+#     mod = sm.tsa.statespace.SARIMAX(y,
+#                                     order=param,
+#                                     seasonal_order=param_seasonal,
+#                                     enforce_stationarity=False,
+#                                     enforce_invertibility=False,
+#                                     verbose=False)
     
-    results = mod.fit()
+#     results = mod.fit()
 
-    start = pd.to_datetime(str(idx.date()))
-    end = pd.to_datetime(str((idx + dt_plus_2_day).date()))
+#     start = pd.to_datetime(str(idx.date()))
+#     end = pd.to_datetime(str((idx + dt_plus_2_day).date()))
 
-    try:
-        pred = results.get_prediction(dynamic=False, start=start, end=end)
-        return pred.predicted_mean[1], pred.predicted_mean[2]
-    except:
-        return None, None
+#     try:
+#         pred = results.get_prediction(dynamic=False, start=start, end=end)
+#         return pred.predicted_mean[1], pred.predicted_mean[2]
+#     except:
+#         return None, None
 
 
-
+#
+# function for Spearman's R
+#
+def add_spearman_r(i_dict):
+    close_list = [
+        i_dict['close_lag_5'],
+        i_dict['close_lag_4'],
+        i_dict['close_lag_3'],
+        i_dict['close_lag_2'],
+        i_dict['close_lag_1'],
+        i_dict['close_lag_0'],
+        ]
+    volume_list = [
+        i_dict['volume_lag_5'],
+        i_dict['volume_lag_4'],
+        i_dict['volume_lag_3'],
+        i_dict['volume_lag_2'],
+        i_dict['volume_lag_1'],
+        i_dict['volume_lag_0'],
+        ]
+    spr, p = spearmanr(close_list, volume_list)
+    i_dict['spearman_r'] = spr
+    i_dict['spearman_r_p'] = p
 
 #
 # connect to close data
@@ -256,7 +280,8 @@ if calculate_match:
             lag_4 = df.ix[df.index[loc - 4],:]['Percent Difference Adj Close']
             lag_5 = df.ix[df.index[loc - 5],:]['Percent Difference Adj Close']
 
-            arima_30_lead_1, arima_30_lead_2 = calculate_arima( df.ix[(idx+dt_4_week):idx,:]['Percent Difference Adj Close'], idx )
+            #arima_30_lead_1, arima_30_lead_2 = calculate_arima( df.ix[(idx+dt_4_week):idx,:]['Percent Difference Adj Close'], idx )
+
 
             i_dict['close_percent_diff_volume'] = df.ix[idx,:]['Percent Difference Volume']
             i_dict['close_percent_52_week_high'] = percent_52_week_high
@@ -270,8 +295,11 @@ if calculate_match:
             i_dict['close_lag_3'] = lag_3
             i_dict['close_lag_4'] = lag_4
             i_dict['close_lag_5'] = lag_5
-            i_dict['close_arima_30_lead_1'] = arima_30_lead_1
-            i_dict['close_arima_30_lead_2'] = arima_30_lead_2
+            #i_dict['close_arima_30_lead_1'] = arima_30_lead_1
+            #i_dict['close_arima_30_lead_2'] = arima_30_lead_2
+
+
+
 
     events_to_scrap = []
     for eidx, e in enumerate(new_events):
@@ -292,7 +320,16 @@ if calculate_match:
     final_events = []
     for eidx, e in enumerate(new_events):
         if not eidx in events_to_scrap:
-            final_events.append(e)
+
+            #
+            # Add spearman here
+            #
+            add_spearman_r(e)
+
+
+
+            if not isnan(e['spearman_r']):
+                final_events.append(e)
 
 
     #

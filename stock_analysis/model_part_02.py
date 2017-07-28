@@ -18,15 +18,15 @@ random.seed(23423)
 output_directory = 'output'
 bad_cutoff_percentile = 30.
 good_cutoff_percentile = 90.
-number_of_vfolds_to_run = 10
+number_of_vfolds_to_run = 100
 lead_variable = 'close_lead_2'
 
 drop = ['close', 'volume_symbol', 'date', 'close_sector', 'volume_sector', 'close_industry', 'volume_industry']
 
 
-#formula = 'y ~ close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_industry + same_sector + volume_lag_0 + volume_lag_1 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
+#formula = 'y ~ spearman_r + spearman_r_p + close_arima_30_lead_1 + close_arima_30_lead_2 + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_industry + same_sector + volume_lag_0 + volume_lag_1 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
 
-formula = 'y ~ close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_sector + volume_lag_0 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
+formula = 'y ~ spearman_r + spearman_r_p + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_sector + volume_lag_0 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
 
 factor_options = {
     'weekday' : ['M', 'Tu', 'W', 'Th', 'F'],
@@ -38,7 +38,6 @@ factor_options = {
 df = pd.read_csv(output_directory + '/data_for_model.csv')
 for d in drop:
     del(df[d])
-
 
 
 
@@ -88,6 +87,12 @@ y, X = ml.categorize(formula, factor_options, df_to_use)
 # cross-validate
 #
 results = ml.v_fold(ml.logit_wrapper, y, X, number_of_vfolds_to_run)
+
+
+
+
+
+
 fpr, tpr, roc_auc = ml.plot_a_representative_ROC_plot(results, 'ROC Curve for Stock Prediction', output_directory + '/ROC.png')
 print
 pp.pprint(results['auc_list'])
@@ -103,6 +108,7 @@ print
 print 'False positive rate at 80% true positive rate: ' + str(fpr[i])
 print 'AUC = ' + str(roc_auc)
 print
+
 
 
 
