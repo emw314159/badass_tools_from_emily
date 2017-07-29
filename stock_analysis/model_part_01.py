@@ -22,8 +22,8 @@ output_directory = 'output'
 quote_data_directory = 'quote_data'
 volume_threshold = 500000
 database_lags = 2
-calculate_events = True
-calculate_database = True
+calculate_events = False
+calculate_database = False
 calculate_match = True
 
 user = 'neo4j'
@@ -295,8 +295,15 @@ if calculate_match:
             ts = df.ix[(idx+dt_4_week):(idx+dt_1_day)]['Percent Difference Adj Close']
 
             loc = list(df.index).index(idx)
+
             lead_1 = df.ix[df.index[loc + 1],:]['Percent Difference Adj Close']
             lead_2 = df.ix[df.index[loc + 2],:]['Percent Difference Adj Close']
+
+            lead_1_price = df.ix[df.index[loc + 1],:]['Adj Close']
+            lead_2_price = df.ix[df.index[loc + 2],:]['Adj Close']
+            price_percent_diff_1_to_2 = 100. * ((lead_2_price - lead_1_price) / lead_1_price)
+
+
             lag_0 = df.ix[df.index[loc - 0],:]['Percent Difference Adj Close']
             lag_1 = df.ix[df.index[loc - 1],:]['Percent Difference Adj Close']
             lag_2 = df.ix[df.index[loc - 2],:]['Percent Difference Adj Close']
@@ -308,6 +315,7 @@ if calculate_match:
 
 
             i_dict['close_ts'] = ts
+            i_dict['price_percent_diff_1_to_2'] = price_percent_diff_1_to_2
             i_dict['close_percent_diff_volume'] = df.ix[idx,:]['Percent Difference Volume']
             i_dict['close_percent_52_week_high'] = percent_52_week_high
             i_dict['close_percent_12_week_high'] = percent_12_week_high

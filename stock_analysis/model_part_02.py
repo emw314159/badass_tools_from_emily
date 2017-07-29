@@ -22,7 +22,9 @@ good_cutoff_percentile = 95.
 number_of_vfolds_to_run = 5
 cost = 0.125
 gamma = 0.5
-lead_variable = 'close_lead_2'
+
+#lead_variable = 'close_lead_2'
+lead_variable = 'price_percent_diff_1_to_2'
 
 
 
@@ -99,7 +101,7 @@ y, X = ml.categorize(formula, factor_options, df_to_use)
 #import sys; sys.exit(0)
 
 
-# python ~/packages/libsvm-3.22/tools/grid.py -svmtrain ~/packages/libsvm-3.22/svm-train -gnuplot "null" -b 1 output/FULL_SVM.scaled
+#python ~/packages/libsvm-3.22/tools/grid.py -svmtrain ~/packages/libsvm-3.22/svm-train -gnuplot "null" -b 1 output/FULL_SVM.scaled
 
 
 
