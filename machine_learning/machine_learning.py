@@ -294,9 +294,9 @@ class svm_wrapper(object):
         self.y_header = list(y.columns.values)
         self.output_file = output_file
         output_libsvm_unscaled_from_y_X(y, X, output_file + '.prescaled', classification=True)
-        svm_scale(output_file + '.prescaled', '/rhome/emily/packages/libsvm-3.22/svm-scale', output_file + '.scaled', output_file + '.scaling_parameters')
+        svm_scale(output_file + '.prescaled', '/Users/emily/packages/libsvm-3.22/svm-scale', output_file + '.scaled', output_file + '.scaling_parameters')
 
-        cmd = '/rhome/emily/packages/libsvm-3.22/svm-train' + ' -g ' + str(g) + ' -c ' + str(c) + ' -b 1 ' + output_file + '.scaled' + ' ' + output_file + '.model'
+        cmd = '/Users/emily/packages/libsvm-3.22/svm-train' + ' -g ' + str(g) + ' -c ' + str(c) + ' -b 1 ' + output_file + '.scaled' + ' ' + output_file + '.model'
         import os
         os.system(cmd)
 
@@ -310,10 +310,10 @@ class svm_wrapper(object):
         output_libsvm_unscaled_from_y_X(y, X, output_file + '.prescaled_to_predict', classification=True)
 
 
-        cmd = '/rhome/emily/packages/libsvm-3.22/svm-scale' + ' -r ' + self.output_file + '.scaling_parameters' + ' ' + output_file + '.prescaled_to_predict' + ' > ' + output_file + '.scaled_to_predict'
+        cmd = '/Users/emily/packages/libsvm-3.22/svm-scale' + ' -r ' + self.output_file + '.scaling_parameters' + ' ' + output_file + '.prescaled_to_predict' + ' > ' + output_file + '.scaled_to_predict'
         os.system(cmd)
 
-        cmd = '/rhome/emily/packages/libsvm-3.22/svm-predict' + ' -b 1 ' + output_file + '.scaled_to_predict' + ' ' + self.output_file + '.model' + ' ' + output_file + '.predicted'
+        cmd = '/Users/emily/packages/libsvm-3.22/svm-predict' + ' -b 1 ' + output_file + '.scaled_to_predict' + ' ' + self.output_file + '.model' + ' ' + output_file + '.predicted'
 
         os.system(cmd)
         f = open(output_file + '.predicted')
@@ -340,9 +340,9 @@ class svm_regression_wrapper(object):
         self.y_header = list(y.columns.values)
         self.output_file = output_file
         output_libsvm_unscaled_from_y_X(y, X, output_file + '.prescaled')
-        svm_scale(output_file + '.prescaled', '/rhome/emily/packages/libsvm-3.22/svm-scale', output_file + '.scaled', output_file + '.scaling_parameters')
+        svm_scale(output_file + '.prescaled', '/Users/emily/packages/libsvm-3.22/svm-scale', output_file + '.scaled', output_file + '.scaling_parameters')
 
-        cmd = '/rhome/emily/packages/libsvm-3.22/svm-train' + ' -s 3 -g ' + str(g) + ' -c ' + str(c) + ' -p ' + str(e) + ' ' + output_file + '.scaled' + ' ' + output_file + '.model'
+        cmd = '/Users/emily/packages/libsvm-3.22/svm-train' + ' -s 3 -g ' + str(g) + ' -c ' + str(c) + ' -p ' + str(e) + ' ' + output_file + '.scaled' + ' ' + output_file + '.model'
         import os
         os.system(cmd)
 
@@ -356,10 +356,10 @@ class svm_regression_wrapper(object):
         output_libsvm_unscaled_from_y_X(y, X, output_file + '.prescaled_to_predict')
 
 
-        cmd = '/rhome/emily/packages/libsvm-3.22/svm-scale' + ' -r ' + self.output_file + '.scaling_parameters' + ' ' + output_file + '.prescaled_to_predict' + ' > ' + output_file + '.scaled_to_predict'
+        cmd = '/Users/emily/packages/libsvm-3.22/svm-scale' + ' -r ' + self.output_file + '.scaling_parameters' + ' ' + output_file + '.prescaled_to_predict' + ' > ' + output_file + '.scaled_to_predict'
         os.system(cmd)
 
-        cmd = '/rhome/emily/packages/libsvm-3.22/svm-predict' + ' ' + output_file + '.scaled_to_predict' + ' ' + self.output_file + '.model' + ' ' + output_file + '.predicted'
+        cmd = '/Users/emily/packages/libsvm-3.22/svm-predict' + ' ' + output_file + '.scaled_to_predict' + ' ' + self.output_file + '.model' + ' ' + output_file + '.predicted'
         os.system(cmd)
 
         f = open(output_file + '.predicted')
