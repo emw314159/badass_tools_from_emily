@@ -22,8 +22,8 @@ output_directory = 'output'
 quote_data_directory = 'quote_data'
 volume_threshold = 500000
 database_lags = 2
-calculate_events = True
-calculate_database = True
+calculate_events = False
+calculate_database = False
 calculate_match = True
 
 user = 'neo4j'
@@ -71,7 +71,7 @@ symbols_with_event = {}
 
 if calculate_events:
     events = []
-    for symbol in symbol_list[0:75]:
+    for symbol in symbol_list[0:200]:
         df = load_and_prepare_stock_data(symbol)
         start_date = df.index[0]
         end_date = df.index[-1]
@@ -135,8 +135,10 @@ if calculate_database:
     session = driver.session()
     database_content = {}
     for symbol in sorted(symbols_with_event.keys()):
-        #cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY), (volume)-[rvs:HAS_SECTOR]-(vs:SECTOR), (close)-[rcs:HAS_SECTOR]-(cs:SECTOR), (volume)-[rvi:HAS_INDUSTRY]-(vi:INDUSTRY), (close)-[rci:HAS_INDUSTRY]-(ci:INDUSTRY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10, vs.id AS volume_sector, cs.id AS close_sector, vi.id AS volume_industry, ci.id AS close_industry;'
-        cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10;'
+
+        cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY), (volume)-[rvs:HAS_SECTOR]-(vs:SECTOR), (close)-[rcs:HAS_SECTOR]-(cs:SECTOR), (volume)-[rvi:HAS_INDUSTRY]-(vi:INDUSTRY), (close)-[rci:HAS_INDUSTRY]-(ci:INDUSTRY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10, vs.sector AS volume_sector, cs.sector AS close_sector, vi.industry AS volume_industry, ci.industry AS close_industry;'
+        
+        #cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10;'
 
         result = session.run(cmd)
 
@@ -147,10 +149,10 @@ if calculate_database:
             database_content[volume].append({
                     'close' : record['close'],
                     'p_log_10' : record['p_log_10'],
-                    #'volume_sector' : record['volume_sector'],
-                    #'close_sector' : record['close_sector'],
-                    #'volume_industry' : record['volume_industry'],
-                    #'close_industry' : record['close_industry'],
+                    'volume_sector' : record['volume_sector'],
+                    'close_sector' : record['close_sector'],
+                    'volume_industry' : record['volume_industry'],
+                    'close_industry' : record['close_industry'],
                     })
 
     with open(output_directory + '/database_content.pickle', 'w') as f:
@@ -374,8 +376,8 @@ df = pd.read_csv(output_directory + '/data_for_model.csv')
 # add some similarity variables
 #
 for e in final_events:
-    #e['same_industry'] = int(e['close_industry'] == e['volume_industry'])
-    #e['same_sector'] = int(e['close_sector'] == e['volume_sector'])
+    e['same_industry'] = int(e['close_industry'] == e['volume_industry'])
+    e['same_sector'] = int(e['close_sector'] == e['volume_sector'])
     e['same_stock'] = int(e['close'] == e['volume_symbol'])
 
 

@@ -29,6 +29,7 @@ download_companies_by_name = True
 download_exchanges = True
 output_directory = 'output'
 
+
 #
 # download companies by name
 #
@@ -257,6 +258,8 @@ f.write('CREATE INDEX ON :INDUSTRY(id);' + '\n')
 #
 # add relationships
 #
+symbol_to_sector = {}
+symbol_to_industry = {}
 for symbol, ipo_year, sector, industry in zip(df.index, df['IPOyear'], df['Sector'], df['industry']):
 
     if ipo_year != None:
@@ -266,10 +269,12 @@ for symbol, ipo_year, sector, industry in zip(df.index, df['IPOyear'], df['Secto
     if sector != None:
         cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (s:SECTOR {id : \'' + sector + '\'}) CREATE UNIQUE (c)-[r:HAS_SECTOR]-(s) RETURN c, r, s;'
         f.write(cmd + '\n')
+        symbol_to_sector[symbol] = sector
 
     if industry != None:
         cmd = 'MATCH (c:COMPANY {id : \'' + symbol + '\'}), (i:INDUSTRY {id : \'' + industry + '\'}) CREATE UNIQUE (c)-[r:HAS_INDUSTRY]-(i) RETURN c, r, i;'
         f.write(cmd + '\n')
+        symbol_to_industry[symbol] = industry
 
 #
 # add exchanges
@@ -291,3 +296,57 @@ for symbol, name in zip(df.index, df['Name']):
 # close the Cypher commands file
 #
 f.close()
+
+#
+# save material
+#
+with open(output_directory + '/unique_Sector.json', 'w') as f:
+    json.dump(unique_Sector, f)
+
+with open(output_directory + '/unique_Industry.json', 'w') as f:
+    json.dump(unique_Industry, f)
+
+with open(output_directory + '/symbol_to_industry.json', 'w') as f:
+    json.dump(symbol_to_industry, f)
+
+with open(output_directory + '/symbol_to_sector.json', 'w') as f:
+    json.dump(symbol_to_sector, f)
+
+#
+# write files for bulk loading
+#
+f = open(output_directory + '/sector_nodes.csv', 'w')
+f.write('sector:ID,:LABEL' + '\n')
+for sector in sorted(unique_Sector.keys()):
+    if sector == 'Miscellaneous':
+        sector = 'Miscellaneous Sector'
+    f.write(','.join([ '"' + sector + '"', 'SECTOR']) + '\n')
+f.close()
+
+f = open(output_directory + '/industry_nodes.csv', 'w')
+f.write('industry:ID,:LABEL' + '\n')
+for industry in sorted(unique_Industry.keys()):
+    if industry == 'Miscellaneous':
+        industry = 'Miscellaneous Industry'
+    f.write(','.join([ '"' + industry + '"', 'INDUSTRY']) + '\n')
+f.close()
+
+f = open(output_directory + '/sector_relationships.csv', 'w')
+f.write(':START_ID,:END_ID,:TYPE' + '\n')
+for symbol in sorted(symbol_to_sector.keys()):
+    sector = symbol_to_sector[symbol]
+    if sector == 'Miscellaneous':
+        sector = 'Miscellaneous Sector'
+    f.write(','.join([symbol, '"' + sector + '"', 'HAS_SECTOR']) + '\n')
+f.close()
+
+f = open(output_directory + '/industry_relationships.csv', 'w')
+f.write(':START_ID,:END_ID,:TYPE' + '\n')
+for symbol in sorted(symbol_to_industry.keys()):
+    industry = symbol_to_industry[symbol]
+    if industry == 'Miscellaneous':
+        industry = 'Miscellaneous Industry'
+    f.write(','.join([symbol, '"' + industry + '"', 'HAS_INDUSTRY']) + '\n')
+f.close()
+
+

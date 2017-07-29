@@ -8,9 +8,12 @@ From my blog post:
 From my effort to create a graph database:
 
      python make_company_graph.py
-     python load_cypher.py output/cypher_commands.txt
+
      python get_quotes.py
      python granger_causality.py
-     python load_volume_adj_close_granger_causality.py
-     python load_cypher.py output/cypher_commands_granger_volume_adj_close.txt
 
+     python load_volume_adj_close_granger_causality.py
+
+     rm -R ~/packages/neo4j-community-3.2.2/data/databases/default.graphdb
+
+     ~/packages/neo4j-community-3.2.2/bin/neo4j-admin import  --database=default.graphdb --relationships:VOLUME_GRANGER_CAUSES_ADJ_CLOSE="output/granger_volume_adj_close.csv" --relationships:HAS_SECTOR="output/sector_relationships.csv" --relationships:HAS_INDUSTRY="output/industry_relationships.csv" --nodes:COMPANY:SECTOR:INDUSTRY="output/company_nodes.csv,output/sector_nodes.csv,output/industry_nodes.csv" --ignore-missing-nodes=true

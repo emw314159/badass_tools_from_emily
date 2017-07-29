@@ -75,4 +75,4 @@ f_csv.close()
 
 
 
-# ~/packages/neo4j-community-3.2.2/bin/neo4j-admin import  --database=default.graphdb --relationships output/granger_volume_adj_close.csv --nodes output/company_nodes.csv
+
