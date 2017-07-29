@@ -20,7 +20,7 @@ output_directory = 'output'
 bad_cutoff_percentile = 40.
 good_cutoff_percentile = 95.
 number_of_vfolds_to_run = 5
-cost = 32.
+cost = 0.125
 gamma = 0.5
 lead_variable = 'close_lead_2'
 

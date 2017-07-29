@@ -22,8 +22,8 @@ output_directory = 'output'
 quote_data_directory = 'quote_data'
 volume_threshold = 500000
 database_lags = 2
-calculate_events = False
-calculate_database = False
+calculate_events = True
+calculate_database = True
 calculate_match = True
 
 user = 'neo4j'
@@ -45,6 +45,7 @@ weekday_map = {
 def load_and_prepare_stock_data(symbol):
     with open(quote_data_directory + '/' + symbol + '.pickle') as f:
         df = pickle.load(f)
+    df = df.sort_index()
     percent_diff = [NaN]
     percent_diff.extend( [((j - i) / i) * 100. for i, j in zip(df['Adj Close'][0:-1], df['Adj Close'][1:])] )
     df['Percent Difference Adj Close'] = percent_diff
@@ -71,7 +72,7 @@ symbols_with_event = {}
 
 if calculate_events:
     events = []
-    for symbol in symbol_list[0:200]:
+    for symbol in symbol_list[0:15]:
         df = load_and_prepare_stock_data(symbol)
         start_date = df.index[0]
         end_date = df.index[-1]
