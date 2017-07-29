@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from numpy import percentile
 import sys
 import random
+from scipy.stats import pearsonr
 
 import badass_tools_from_emily.machine_learning.machine_learning as ml
 
@@ -16,17 +17,20 @@ import badass_tools_from_emily.machine_learning.machine_learning as ml
 #
 random.seed(23423)
 output_directory = 'output'
-bad_cutoff_percentile = 30.
-good_cutoff_percentile = 90.
-number_of_vfolds_to_run = 100
+bad_cutoff_percentile = 40.
+good_cutoff_percentile = 95.
+number_of_vfolds_to_run = 10
+cost = 2048.
+gamma = 0.0078125
 lead_variable = 'close_lead_2'
 
-drop = ['close', 'volume_symbol', 'date', 'close_sector', 'volume_sector', 'close_industry', 'volume_industry']
 
 
-#formula = 'y ~ spearman_r + spearman_r_p + close_arima_30_lead_1 + close_arima_30_lead_2 + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_industry + same_sector + volume_lag_0 + volume_lag_1 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
+#formula = 'y ~ spearman_r + spearman_r_p + close_arima_30_lead_1 + close_arima_30_lead_2 + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_industry + same_sector + same_stock + volume_lag_0 + volume_lag_1 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
 
-formula = 'y ~ spearman_r + spearman_r_p + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_sector + volume_lag_0 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
+formula = 'y ~ spearman_r + spearman_r_p + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_stock + volume_lag_0 + volume_lag_1 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
+
+
 
 factor_options = {
     'weekday' : ['M', 'Tu', 'W', 'Th', 'F'],
@@ -36,8 +40,11 @@ factor_options = {
 # load data
 #
 df = pd.read_csv(output_directory + '/data_for_model.csv')
-for d in drop:
-    del(df[d])
+
+#for d in drop:
+#    del(df[d])
+
+
 
 
 
@@ -83,10 +90,22 @@ df_to_use['y'] = y
 #
 y, X = ml.categorize(formula, factor_options, df_to_use)
 
+
+
+# #
+# # get full model for grid.py
+# #
+# model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file='output/FULL_SVM')
+
+# python ~/packages/libsvm-3.22/tools/grid.py -svmtrain ~/packages/libsvm-3.22/svm-train -gnuplot "null" -b 1 output/FULL_SVM.scaled
+
+
+
+
 #
 # cross-validate
 #
-results = ml.v_fold(ml.logit_wrapper, y, X, number_of_vfolds_to_run)
+results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV')
 
 
 

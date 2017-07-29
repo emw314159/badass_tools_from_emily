@@ -71,7 +71,7 @@ symbols_with_event = {}
 
 if calculate_events:
     events = []
-    for symbol in symbol_list[0:15]:
+    for symbol in symbol_list[0:75]:
         df = load_and_prepare_stock_data(symbol)
         start_date = df.index[0]
         end_date = df.index[-1]
@@ -85,6 +85,8 @@ if calculate_events:
             percent_12_week_high = df.ix[i,:]['Adj Close'] / max(df.ix[(i+dt_12_week):(i+dt_1_day),:]['Adj Close'])
             percent_4_week_high = df.ix[i,:]['Adj Close'] / max(df.ix[(i+dt_4_week):(i+dt_1_day),:]['Adj Close'])
 
+            ts = df.ix[(i+dt_4_week):(i+dt_1_day)]['Percent Difference Adj Close']
+
             loc = list(df.index).index(i)
             weekday = i.weekday()
             lag_0 = df.ix[df.index[loc - 0],:]['Percent Difference Adj Close']
@@ -95,6 +97,7 @@ if calculate_events:
             lag_5 = df.ix[df.index[loc - 5],:]['Percent Difference Adj Close']
 
             events.append({
+                    'volume_ts' : ts,
                     'volume_percent_diff_volume' : df.ix[i,:]['Percent Difference Volume'],
                     'volume_symbol' : symbol,
                     'weekday' : weekday_map[weekday],
@@ -121,6 +124,9 @@ else:
     with open(output_directory + '/symbols_with_events.pickle') as f:
         symbols_with_event = pickle.load(f)
 
+
+
+
 #
 # get content from database
 #
@@ -128,8 +134,9 @@ if calculate_database:
     driver = GraphDatabase.driver('bolt://localhost:7687', auth=basic_auth(user, password))
     session = driver.session()
     database_content = {}
-    for symbol in sorted(symbols_with_event.keys())[0:15]:
-        cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY), (volume)-[rvs:HAS_SECTOR]-(vs:SECTOR), (close)-[rcs:HAS_SECTOR]-(cs:SECTOR), (volume)-[rvi:HAS_INDUSTRY]-(vi:INDUSTRY), (close)-[rci:HAS_INDUSTRY]-(ci:INDUSTRY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10, vs.id AS volume_sector, cs.id AS close_sector, vi.id AS volume_industry, ci.id AS close_industry;'
+    for symbol in sorted(symbols_with_event.keys()):
+        #cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY), (volume)-[rvs:HAS_SECTOR]-(vs:SECTOR), (close)-[rcs:HAS_SECTOR]-(cs:SECTOR), (volume)-[rvi:HAS_INDUSTRY]-(vi:INDUSTRY), (close)-[rci:HAS_INDUSTRY]-(ci:INDUSTRY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10, vs.id AS volume_sector, cs.id AS close_sector, vi.id AS volume_industry, ci.id AS close_industry;'
+        cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + symbol + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10;'
 
         result = session.run(cmd)
 
@@ -140,10 +147,10 @@ if calculate_database:
             database_content[volume].append({
                     'close' : record['close'],
                     'p_log_10' : record['p_log_10'],
-                    'volume_sector' : record['volume_sector'],
-                    'close_sector' : record['close_sector'],
-                    'volume_industry' : record['volume_industry'],
-                    'close_industry' : record['close_industry'],
+                    #'volume_sector' : record['volume_sector'],
+                    #'close_sector' : record['close_sector'],
+                    #'volume_industry' : record['volume_industry'],
+                    #'close_industry' : record['close_industry'],
                     })
 
     with open(output_directory + '/database_content.pickle', 'w') as f:
@@ -152,6 +159,11 @@ if calculate_database:
 else:
     with open(output_directory + '/database_content.pickle') as f:
         database_content = pickle.load(f)
+
+
+
+
+
 
 #
 # match
@@ -224,23 +236,30 @@ for e in events:
 # function for Spearman's R
 #
 def add_spearman_r(i_dict):
-    close_list = [
-        i_dict['close_lag_5'],
-        i_dict['close_lag_4'],
-        i_dict['close_lag_3'],
-        i_dict['close_lag_2'],
-        i_dict['close_lag_1'],
-        i_dict['close_lag_0'],
-        ]
-    volume_list = [
-        i_dict['volume_lag_5'],
-        i_dict['volume_lag_4'],
-        i_dict['volume_lag_3'],
-        i_dict['volume_lag_2'],
-        i_dict['volume_lag_1'],
-        i_dict['volume_lag_0'],
-        ]
-    spr, p = spearmanr(close_list, volume_list)
+#     close_list = [
+#         i_dict['close_lag_5'],
+#         i_dict['close_lag_4'],
+#         i_dict['close_lag_3'],
+#         i_dict['close_lag_2'],
+#         i_dict['close_lag_1'],
+#         i_dict['close_lag_0'],
+#         ]
+#     volume_list = [
+#         i_dict['volume_lag_5'],
+#         i_dict['volume_lag_4'],
+#         i_dict['volume_lag_3'],
+#         i_dict['volume_lag_2'],
+#         i_dict['volume_lag_1'],
+#         i_dict['volume_lag_0'],
+#         ]
+#     spr, p = spearmanr(close_list, volume_list)
+
+    if i_dict['volume_symbol'] == i_dict['close']:
+        spr = 1.
+        p = 0.
+    else:
+        spr, p = spearmanr(i_dict['volume_ts'], i_dict['close_ts'])
+
     i_dict['spearman_r'] = spr
     i_dict['spearman_r_p'] = p
 
@@ -270,6 +289,8 @@ if calculate_match:
             percent_12_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_12_week):(idx+dt_1_day),:]['Adj Close'])
             percent_4_week_high = df.ix[idx,:]['Adj Close'] / max(df.ix[(idx+dt_4_week):(idx+dt_1_day),:]['Adj Close'])
 
+            ts = df.ix[(idx+dt_4_week):(idx+dt_1_day)]['Percent Difference Adj Close']
+
             loc = list(df.index).index(idx)
             lead_1 = df.ix[df.index[loc + 1],:]['Percent Difference Adj Close']
             lead_2 = df.ix[df.index[loc + 2],:]['Percent Difference Adj Close']
@@ -283,6 +304,7 @@ if calculate_match:
             #arima_30_lead_1, arima_30_lead_2 = calculate_arima( df.ix[(idx+dt_4_week):idx,:]['Percent Difference Adj Close'], idx )
 
 
+            i_dict['close_ts'] = ts
             i_dict['close_percent_diff_volume'] = df.ix[idx,:]['Percent Difference Volume']
             i_dict['close_percent_52_week_high'] = percent_52_week_high
             i_dict['close_percent_12_week_high'] = percent_12_week_high
@@ -335,6 +357,9 @@ if calculate_match:
     #
     # save dataframe
     #
+    for e in final_events:
+        del(e['volume_ts'])
+        del(e['close_ts'])
     df = pd.DataFrame(final_events)
     df.to_csv(output_directory + '/data_for_model.csv', index=False)
 
@@ -349,9 +374,9 @@ df = pd.read_csv(output_directory + '/data_for_model.csv')
 # add some similarity variables
 #
 for e in final_events:
-    e['same_industry'] = int(e['close_industry'] == e['volume_industry'])
-    e['same_sector'] = int(e['close_sector'] == e['volume_sector'])
-
+    #e['same_industry'] = int(e['close_industry'] == e['volume_industry'])
+    #e['same_sector'] = int(e['close_sector'] == e['volume_sector'])
+    e['same_stock'] = int(e['close'] == e['volume_symbol'])
 
 
 #
