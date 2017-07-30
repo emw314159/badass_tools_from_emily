@@ -1,0 +1,39 @@
+<html>
+<head>
+
+  {% load static %}
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+  <script type="text/javascript" src="{% static "volume_movers_index.js" %}"></script>
+  <link rel="stylesheet" href="{% static "volume_movers_index.css" %}"></link>
+</head>
+<body>
+
+<div ng-app="volume_movers_app">
+  <div ng-controller="volume_movers_controller">
+    <h1>Potential Buys</h1>
+    <table id="main-table">
+      <thead>
+	<tr>
+	  <th>Symbol</th>
+	  <th>Score</th>
+	  <th>True Positive Rate</th>
+	  <th>False Positive Rate</th>
+	  <!--th>Mean</th>
+	  <th>Median</th-->
+	</tr>
+      </thead>
+      <tbody>
+	<tr ng-repeat="item in data">
+	  <td>{% verbatim %}{{item.close}}{% endverbatim %}</td>
+	  <td>{% verbatim %}{{item.high_score}}{% endverbatim %}</td>
+	  <td>{% verbatim %}{{item.tpr | number:3}}{% endverbatim %}</td>
+	  <td>{% verbatim %}{{item.fpr | number:3}}{% endverbatim %}</td>
+	  <!--td>{% verbatim %}{{item.mean | number:3}}{% endverbatim %}</td>
+	  <td>{% verbatim %}{{item.median | number:3}}{% endverbatim %}</td-->
+	</tr>
+      </tbody>
+  </div>
+</div>
+
+</body>
+</html>
