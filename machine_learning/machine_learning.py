@@ -102,6 +102,7 @@ def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose
         auc_list = []
         fpr_list = []
         tpr_list = []
+        thresholds_list = []
         average_precision_list = []
         precision_list = []
         recall_list = []
@@ -132,13 +133,14 @@ def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose
         y_predicted = model.predict(X_testing)
 
         if classification:
-            fpr, tpr, _ = roc_curve(y_testing, y_predicted)
+            fpr, tpr, thresholds = roc_curve(y_testing, y_predicted)
             roc_auc = auc(fpr, tpr)
             average_precision = average_precision_score(y_testing, y_predicted)
             precision, recall, _ = precision_recall_curve(y_testing, y_predicted)
             fpr_list.append(list(fpr))
             tpr_list.append(list(tpr)) 
             auc_list.append(roc_auc)
+            thresholds_list.append(list(thresholds))
             average_precision_list.append(average_precision)
             precision_list.append(list(precision))
             recall_list.append(list(recall))
@@ -155,6 +157,7 @@ def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose
         data_to_return['average_precision_list'] = average_precision_list
         data_to_return['precision_list'] = precision_list
         data_to_return['recall_list'] = recall_list
+        data_to_return['thresholds_list'] = thresholds_list
     else:
         data_to_return['spearmanr_list'] = spearmanr_list
         data_to_return['y_testing_list'] = y_testing_list
@@ -223,12 +226,14 @@ def plot_a_representative_ROC_plot(results_from_v_fold, title, output_file):
         'auc_list' : results_from_v_fold['auc_list'],
         'fpr_list' : results_from_v_fold['fpr_list'],
         'tpr_list' : results_from_v_fold['tpr_list'],
+        'thesholds_list' : results_from_v_fold['thresholds_list'],
     }
     sorted_dict = sort_lists_by_rank_of_another_list(info_dict, 'auc_list')
     i = int(round(float(len(sorted_dict['auc_list'])) / 2.))
     fpr = sorted_dict['fpr_list'][i]
     tpr = sorted_dict['tpr_list'][i]
     roc_auc = sorted_dict['auc_list'][i]
+    thresholds = sorted_dict['thesholds_list'][i]
 
     plt.figure()
     plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC Curve (Area = %0.2f)' % roc_auc)
@@ -242,7 +247,7 @@ def plot_a_representative_ROC_plot(results_from_v_fold, title, output_file):
     plt.savefig(output_file)
     plt.close()
 
-    return fpr, tpr, roc_auc
+    return fpr, tpr, roc_auc, thresholds
 
 def output_libsvm_unscaled_from_df(df, formula, output_file, classification=False):
     y, X = dmatrices(formula, df, return_type = 'dataframe')
