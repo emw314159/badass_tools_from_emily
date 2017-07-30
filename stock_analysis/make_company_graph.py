@@ -316,7 +316,7 @@ with open(output_directory + '/symbol_to_sector.json', 'w') as f:
 # write files for bulk loading
 #
 f = open(output_directory + '/sector_nodes.csv', 'w')
-f.write('sector:ID,:LABEL' + '\n')
+f.write('id:ID,:LABEL' + '\n')
 for sector in sorted(unique_Sector.keys()):
     if sector == 'Miscellaneous':
         sector = 'Miscellaneous Sector'
@@ -324,7 +324,7 @@ for sector in sorted(unique_Sector.keys()):
 f.close()
 
 f = open(output_directory + '/industry_nodes.csv', 'w')
-f.write('industry:ID,:LABEL' + '\n')
+f.write('id:ID,:LABEL' + '\n')
 for industry in sorted(unique_Industry.keys()):
     if industry == 'Miscellaneous':
         industry = 'Miscellaneous Industry'
