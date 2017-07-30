@@ -10,39 +10,31 @@ import json
 import pandas_datareader as pdr
 from numpy import NaN
 import sys
+from scipy.stats import spearmanr, pearsonr
+import os
 
-from badass_tools_from_emily.misc import chunk
+from badass_tools_from_emily.misc import chunk, weekday_map
+
+#
+# load configuration
+#
+with open(sys.argv[1]) as f:
+    config = json.load(f)
 
 #
 # user settings
 #
-user = 'neo4j'
-password = 'aoeuI444'
-volume_threshold = 500000
-database_lags = 2
-runtime_output_directory = 'output'
-runtime_output_directory_year = 'output/year'
+user = config['user']
+password = config['password']
+volume_threshold = config['volume_threshold']
+database_lags = config['database_lags']
+runtime_output_directory = config['runtime_output_directory']
+runtime_output_directory_year = config['runtime_output_directory']
 query_database_for_movers = False
 get_two_day_stocks = False
 pull_year_for_volume_and_close = False
 calculate_feature_for_symbols = False
-
-# this is repeated code
-weekday_map = {
-    0 : 'M',
-    1 : 'Tu',
-    2 : 'W',
-    3 : 'Th',
-    4 : 'F',
-    5 : 'Sa',
-    6 : 'Su',
-}
-
-
-
-
-
-
+calculate_cross_stock_features = False
 
 #
 # connect to database
@@ -59,6 +51,11 @@ end = (datetime.datetime.now() + datetime.timedelta(days=-1)).date()
 # get volume movers known to database
 #
 if query_database_for_movers:
+
+    # remove runtime output directory
+    os.system('rm -R ' + runtime_output_directory)
+    os.system('mkdir ' + runtime_output_directory)
+
     cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY) WHERE r.lag = ' + str(database_lags) + ' RETURN volume.id AS volume, close.id AS close, r.lag as lag, r.p_log_10 as p_log_10;'
     volume_movers = {}
     result = session.run(cmd)
@@ -277,7 +274,6 @@ if calculate_feature_for_symbols:
 
         result = session.run(cmd)
         for record in result:
-            count += 1
             industry = record['industry']
             sector = record['sector']
 
@@ -307,5 +303,51 @@ else:
     with open(runtime_output_directory + '/calculated_features.json') as f:
         calculated_features = json.load(f)
 
-pp.pprint(calculated_features)
+#
+# calculate cross stock features
+#
+if calculate_cross_stock_features:
+    entries = []
+    for volume in sorted(volume_movers.keys()):
+        for close in sorted(volume_movers[volume].keys()):
+            entry_dict = {}
+            
+            entry_dict['p_log_10'] = volume_movers[volume][close]
+            entry_dict['same_stock'] = int(volume == close)
+
+            if not calculated_features.has_key(volume):
+                continue
+            else:
+                for key in calculated_features[volume]:
+                    if key != 'date':
+                        entry_dict['volume_' + key] = calculated_features[volume][key]
+
+            if not calculated_features.has_key(close):
+                continue
+            else:
+                for key in calculated_features[close]:
+                    if key != 'date':
+                        entry_dict['close_' + key] = calculated_features[close][key]
+
+            entry_dict['same_sector'] = int(entry_dict['volume_sector'] == entry_dict['close_sector'])
+            entry_dict['same_industry'] = int(entry_dict['volume_industry'] == entry_dict['close_industry'])
+
+            spearman_r, spearman_r_p = spearmanr( entry_dict['volume_ts'], entry_dict['close_ts'] )
+            pearson_r, pearson_r_p = pearsonr( entry_dict['volume_ts'], entry_dict['close_ts'] )
+            entry_dict['spearman_r'] = spearman_r
+            entry_dict['spearman_r_p'] = spearman_r_p
+            entry_dict['pearson_r'] = pearson_r
+            entry_dict['pearson_r_p'] = pearson_r_p
+            del(entry_dict['volume_ts'])
+            del(entry_dict['close_ts'])
+
+            entry_dict['volume_symbol'] = volume
+            entry_dict['close_symbol'] = close
+
+            entries.append(entry_dict)
+
+    df = pd.DataFrame(entries)
+    df.to_csv(runtime_output_directory + '/predict_me.csv', index=False)
+
+
 
