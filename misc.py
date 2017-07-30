@@ -6,6 +6,20 @@ import math
 
 
 #
+# useful weekday map
+#
+weekday_map = {
+    0 : 'M',
+    1 : 'Tu',
+    2 : 'W',
+    3 : 'Th',
+    4 : 'F',
+    5 : 'Sa',
+    6 : 'Su',
+}
+
+
+#
 # normalize a list between 0. and 1.
 #
 def normalize_list_0_1(y):
