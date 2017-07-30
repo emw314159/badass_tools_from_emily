@@ -30,6 +30,7 @@ user = config['user']
 password = config['password']
 volume_threshold = config['volume_threshold']
 database_lags = config['database_lags']
+output_directory = config['output_directory']
 runtime_output_directory = config['runtime_output_directory']
 runtime_output_directory_year = config['runtime_output_directory']
 full_model_file = config['full_model_file']
@@ -364,6 +365,10 @@ else:
 #
 #
 if predict:
+
+    with open(output_directory + '/fpr_tpr_thresholds.pickle') as f:
+        thresholds = pickle.load(f)
+
     correct_dict = []
     for idx in df.index:
         line = df.ix[idx,:]
@@ -425,14 +430,20 @@ if predict:
             all_scores = sorted(close_to_scores[close].keys())
             all_scores.reverse()
 
-            result['all_scores'] = ', '.join([str(x) for x in all_scores])
+            result['all_scores'] = ', '.join([str(round(x, 3)) for x in all_scores])
+
+            th_list = list(thresholds['thresholds'])
+            for i, th in enumerate(th_list):
+                if th <= score:
+                    break
+            result['tpr'] = thresholds['tpr'][i]
+            result['fpr'] = thresholds['fpr'][i]
+
             report.append(result)
 
     report_df = pd.DataFrame(report)
 
     print report_df
-
-
 
 
 
