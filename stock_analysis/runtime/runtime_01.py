@@ -15,12 +15,14 @@ from badass_tools_from_emily.misc import chunk
 # user settings
 #
 user = 'neo4j'
-password = 'aoeuI111'
+password = 'aoeuI444'
 volume_threshold = 500000
 database_lags = 2
 runtime_output_directory = 'output'
+runtime_output_directory_year = 'output/year'
 query_database_for_movers = False
-get_two_day_stocks = True
+get_two_day_stocks = False
+pull_year_for_volume_and_close = False
 
 
 #
@@ -98,13 +100,16 @@ if get_two_day_stocks:
     start = (end + datetime.timedelta(days=-8))
 
     errors = f(volume_list, 200, start, end, volumes_that_moved_yesterday)
-
     print
     print 'length(errors) = ' + str(len(errors)) + '\t' + str(len(volumes_that_moved_yesterday))
     print
 
     errors = f(errors, 10, start, end, volumes_that_moved_yesterday)
+    print
+    print 'length(errors) = ' + str(len(errors)) + '\t' + str(len(volumes_that_moved_yesterday))
+    print
 
+    errors = f(errors, 1, start, end, volumes_that_moved_yesterday)
     print
     print 'length(errors) = ' + str(len(errors)) + '\t' + str(len(volumes_that_moved_yesterday))
     print
@@ -119,4 +124,65 @@ else:
 
 
 
+
+
+
+
+#
+#
+#
+def f2(stock_list, n, start, end):
+
+    errors = []
+    chunks = chunk(stock_list, n)
+    
+    print
+    print len(chunks)
+    print
+
+    for i, c in enumerate(chunks):
+
+        print i
+
+        try:
+            panel = pdr.get_data_yahoo(symbols=c, start=start, end=end)
+            
+            for symbol in c:
+                df = panel.minor_xs(symbol)
+                df = df.sort_index()
+                with open(runtime_output_directory_year + '/' + symbol + '.pickle', 'w') as f:
+                    pickle.dump(df, f)
+        except:
+            errors.extend(c)
+    
+    return errors
+
+
+#
+# pull year for volumes, close for volumes that moved
+#
+if pull_year_for_volume_and_close:
+    unique_symbols = {}
+    for volume in volumes_that_moved_yesterday:
+        unique_symbols[volume] = None
+        for close in volume_movers[volume].keys():
+            unique_symbols[close] = None
+
+    end = (datetime.datetime.now() + datetime.timedelta(days=-1)).date()
+    start = (end + datetime.timedelta(days=-380))
+
+    errors = f2(unique_symbols.keys(), 200, start, end)
+    print
+    print 'length(errors) = ' + str(len(errors))
+    print
+
+    errors = f2(errors, 10, start, end)
+    print
+    print 'length(errors) = ' + str(len(errors))
+    print
+
+    errors = f2(errors, 1, start, end)
+    print
+    print 'length(errors) = ' + str(len(errors))
+    print
 
