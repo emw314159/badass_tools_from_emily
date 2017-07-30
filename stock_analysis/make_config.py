@@ -8,6 +8,9 @@ configuration = {
     'output_directory' : '/home/ec2-user/badass_tools_from_emily/stock_analysis/output',
     'quote_data_directory' : '/home/ec2-user/badass_tools_from_emily/stock_analysis/quote_data',
 
+    'full_model_file' : '/home/ec2-user/badass_tools_from_emily/stock_analysis/output/FULL_SVM',
+    'libsvm_root' : '/home/ec2-user/packages/libsvm-3.22',
+
     'user' : 'neo4j',
     'password' : 'aoeuI444',
     'volume_threshold' : 500000,
@@ -19,8 +22,8 @@ configuration = {
     'bad_cutoff_percentile' : 40.,
     'good_cutoff_percentile' : 95.,
     'number_of_vfolds_to_run' : 5,
-    'cost' : 0.125, 
-    'gamma' : 0.5, 
+    'cost' : 0.03125,
+    'gamma' : 0.125,
 
     'lead_variable' : 'price_percent_diff_1_to_2',
 
