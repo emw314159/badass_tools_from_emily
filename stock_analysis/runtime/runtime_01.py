@@ -8,12 +8,14 @@ from neo4j.v1 import GraphDatabase, basic_auth
 import pandas as pd
 import json
 import pandas_datareader as pdr
-from numpy import NaN
+from numpy import NaN, isnan
 import sys
 from scipy.stats import spearmanr, pearsonr
 import os
 
 from badass_tools_from_emily.misc import chunk, weekday_map
+import badass_tools_from_emily.machine_learning.machine_learning as ml
+
 
 #
 # load configuration
@@ -30,11 +32,16 @@ volume_threshold = config['volume_threshold']
 database_lags = config['database_lags']
 runtime_output_directory = config['runtime_output_directory']
 runtime_output_directory_year = config['runtime_output_directory']
+full_model_file = config['full_model_file']
+formula = config['formula']
+factor_options = config['factor_options']
+
 query_database_for_movers = False
 get_two_day_stocks = False
 pull_year_for_volume_and_close = False
 calculate_feature_for_symbols = False
 calculate_cross_stock_features = False
+predict = True
 
 #
 # connect to database
@@ -348,6 +355,93 @@ if calculate_cross_stock_features:
 
     df = pd.DataFrame(entries)
     df.to_csv(runtime_output_directory + '/predict_me.csv', index=False)
+
+
+else:
+    df = pd.read_csv(runtime_output_directory + '/predict_me.csv')
+
+#
+#
+#
+if predict:
+    correct_dict = []
+    for idx in df.index:
+        line = df.ix[idx,:]
+        error_found = False
+        for i in line:
+            try:
+                if isnan(i):
+                    error_found = True
+                    break
+            except:
+                pass
+        if not error_found:
+            correct_dict.append( line.to_dict())
+
+    predict_df = pd.DataFrame(correct_dict)
+    predict_df['y'] = 1
+    predict_df['weekday'] = predict_df['volume_weekday']
+    y, X = ml.categorize(formula, factor_options, predict_df)
+
+    with open(full_model_file + '.pickle') as f:
+        model = pickle.load(f)
+
+    prediction = model.predict(X)
+    predict_df['prediction'] = prediction
+
+    close_to_scores = {}
+    scores_to_close = {}
+    for close, score in zip(predict_df['close_symbol'], predict_df['prediction']):
+        if not close_to_scores.has_key(close):
+            close_to_scores[close] = {}
+        close_to_scores[close][score] = None
+        if not scores_to_close.has_key(score):
+            scores_to_close[score] = {}
+        scores_to_close[score][close] = None
+
+    # collapse_scores_to_close
+    scores_reversed = sorted(scores_to_close.keys())
+    scores_reversed.reverse()
+    collapsed = {}
+    already_found = {}
+    for score in scores_reversed:
+        for close in scores_to_close[score]:
+            if not already_found.has_key(close):
+                if not collapsed.has_key(score):
+                    collapsed[score] = {}
+                collapsed[score][close] = None
+                already_found[close] = None
+
+    # report
+    report = []
+    scores_reversed = sorted(collapsed.keys())
+    scores_reversed.reverse()
+    for score in scores_reversed:
+        for close in sorted(collapsed[score].keys()):
+            result = {}
+            result['high_score'] = score
+            result['close'] = close
+
+            all_scores = sorted(close_to_scores[close].keys())
+            all_scores.reverse()
+
+            result['all_scores'] = ', '.join([str(x) for x in all_scores])
+            report.append(result)
+
+    report_df = pd.DataFrame(report)
+
+    print report_df
+
+
+
+
+
+
+
+
+
+                                 
+
 
 
 
