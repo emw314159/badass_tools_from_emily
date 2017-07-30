@@ -4,39 +4,41 @@
 #
 import pprint as pp
 import pandas as pd
+
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 from numpy import percentile
 import sys
 import random
-from scipy.stats import pearsonr
+import json
 
 import badass_tools_from_emily.machine_learning.machine_learning as ml
+
+
+#
+# load configuration
+#
+with open(sys.argv[1]) as f:
+    config = json.load(f)
+
 
 #
 # user settings
 #
-random.seed(23423)
-output_directory = 'output'
-bad_cutoff_percentile = 40.
-good_cutoff_percentile = 95.
-number_of_vfolds_to_run = 5
-cost = 0.125
-gamma = 0.5
-
-#lead_variable = 'close_lead_2'
-lead_variable = 'price_percent_diff_1_to_2'
-
-
-
-#formula = 'y ~ spearman_r + spearman_r_p + close_arima_30_lead_1 + close_arima_30_lead_2 + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_industry + same_sector + same_stock + volume_lag_0 + volume_lag_1 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
-
-formula = 'y ~ spearman_r + spearman_r_p + close_lag_0 + close_lag_1 + close_lag_2 + close_lag_3 + close_lag_4 + close_lag_5 + close_percent_12_week_high + close_percent_4_week_high + close_percent_52_week_high + close_percent_diff_volume + p_log_10 + same_sector + same_industry + same_stock + volume_lag_0 + volume_lag_1 + volume_lag_2 + volume_lag_3 + volume_lag_4 + volume_lag_5 + volume_percent_12_week_high + volume_percent_4_week_high + volume_percent_52_week_high + volume_percent_diff_volume + C(weekday)'
-
-
-
-factor_options = {
-    'weekday' : ['M', 'Tu', 'W', 'Th', 'F'],
-    }
+random.seed(config['seed'])
+output_directory = config['output_directory']
+bad_cutoff_percentile = config['bad_cutoff_percentile']
+good_cutoff_percentile = config['good_cutoff_percentile']
+number_of_vfolds_to_run = config['number_of_vfolds_to_run']
+cost = config['cost']
+gamma = config['gamma']
+lead_variable = config['lead_variable']
+formula = config['formula']
+factor_options = config['factor_options']
+libsvm_root = config['libsvm_root']
+full_model_file = config['full_model_file']
 
 #
 # load data
@@ -56,7 +58,7 @@ df = pd.read_csv(output_directory + '/data_for_model.csv')
 #
 plt.figure()
 plt.hist(df[lead_variable])
-plt.savefig(output_directory + '/HIST_close_lead_2.png')
+plt.savefig(output_directory + '/HIST_' + lead_variable + '.png')
 plt.close()
 
 #
@@ -97,7 +99,7 @@ y, X = ml.categorize(formula, factor_options, df_to_use)
 #
 # get full model for grid.py
 #
-#model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file='output/FULL_SVM')
+#model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsvm_root=libsvm_root)
 #import sys; sys.exit(0)
 
 
@@ -109,7 +111,7 @@ y, X = ml.categorize(formula, factor_options, df_to_use)
 #
 # cross-validate
 #
-results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV')
+results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV', libsvm_root=libsvm_root)
 
 
 

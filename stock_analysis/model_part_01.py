@@ -5,39 +5,39 @@ import pickle
 import glob
 import pprint as pp
 from numpy import NaN, percentile, isnan
-import matplotlib.pyplot as plt
 from datetime import timedelta
 from neo4j.v1 import GraphDatabase, basic_auth
 import pandas as pd
+import sys
+import json
 
-import statsmodels.api as sm
-import itertools
 
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, pearsonr
+
+from badass_tools_from_emily.misc import weekday_map
+
+#
+# load configuration
+#
+with open(sys.argv[1]) as f:
+    config = json.load(f)
+
+
 
 #
 # user settings
 #
-output_directory = 'output'
-quote_data_directory = 'quote_data'
-volume_threshold = 500000
-database_lags = 2
-calculate_events = False
-calculate_database = False
+output_directory = config['output_directory']
+quote_data_directory = config['quote_data_directory']
+volume_threshold = config['volume_threshold']
+database_lags = config['database_lags']
+calculate_events = True
+calculate_database = True
 calculate_match = True
 
-user = 'neo4j'
-password = 'aoeuI111'
+user = config['user']
+password = config['password']
 
-weekday_map = {
-    0 : 'M',
-    1 : 'Tu',
-    2 : 'W',
-    3 : 'Th',
-    4 : 'F',
-    5 : 'Sa',
-    6 : 'Su',
-}
 
 #
 # function to load and prepare stock data
@@ -57,7 +57,7 @@ def load_and_prepare_stock_data(symbol):
 #
 # get symbol list
 #
-symbol_list = sorted([x.split('/')[1].replace('.pickle', '') for x in glob.glob(quote_data_directory + '/*.pickle')])
+symbol_list = sorted([x.split('/')[-1].replace('.pickle', '') for x in glob.glob(quote_data_directory + '/*.pickle')])
 
 #
 # figure out dates of event
@@ -267,6 +267,22 @@ def add_spearman_r(i_dict):
     i_dict['spearman_r_p'] = p
 
 #
+# function for Pearson's R
+#
+def add_pearson_r(i_dict):
+
+    if i_dict['volume_symbol'] == i_dict['close']:
+        pr = 1.
+        p = 0.
+    else:
+        pr, p = pearsonr(i_dict['volume_ts'], i_dict['close_ts'])
+
+    i_dict['pearson_r'] = pr
+    i_dict['pearson_r_p'] = p
+
+
+
+#
 # connect to close data
 #
 if calculate_match:
@@ -358,6 +374,7 @@ if calculate_match:
             # Add spearman here
             #
             add_spearman_r(e)
+            add_pearson_r(e)
 
 
 
