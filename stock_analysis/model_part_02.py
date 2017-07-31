@@ -45,7 +45,8 @@ full_model_file = config['full_model_file']
 # load data
 #
 df = pd.read_csv(output_directory + '/data_for_model.csv')
-
+df = df.sample(frac=0.05)
+print len(df.index)
 
 
 #
@@ -98,9 +99,9 @@ model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsv
 with open(full_model_file + '.pickle', 'w') as f:
     pickle.dump(model, f)
 
+#sys.exit(0)
 
-#python ~/packages/libsvm-3.22/tools/grid.py -svmtrain ~/packages/libsvm-3.22/svm-train -gnuplot "null" -b 1 output/FULL_SVM.scaled
-
+#python ~/packages/libsvm-3.22/tools/grid.py -svmtrain ~/packages/libsvm-3.22/svm-train -gnuplot /usr/bin/gnuplot -png output/grid.png -out output/grid.out -b 1 output/FULL_SVM.scaled
 
 
 
@@ -108,6 +109,9 @@ with open(full_model_file + '.pickle', 'w') as f:
 # cross-validate
 #
 results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV', libsvm_root=libsvm_root)
+
+
+ml.plot_auc_histogram(results, 'Cross-Validation AUC Histogram', output_directory + '/HIST_AUC.png')
 
 
 
