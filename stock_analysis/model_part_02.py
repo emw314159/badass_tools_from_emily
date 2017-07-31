@@ -30,11 +30,11 @@ with open(sys.argv[1]) as f:
 #
 random.seed(config['seed'])
 output_directory = config['output_directory']
-bad_cutoff_percentile = config['bad_cutoff_percentile']
-good_cutoff_percentile = config['good_cutoff_percentile']
-number_of_vfolds_to_run = config['number_of_vfolds_to_run']
-cost = config['cost']
-gamma = config['gamma']
+bad_cutoff_percentile = 40. #config['bad_cutoff_percentile']
+good_cutoff_percentile = 95. #config['good_cutoff_percentile']
+number_of_vfolds_to_run = 5 # config['number_of_vfolds_to_run']
+cost = 2.**5. #config['cost']
+gamma = 2.**-7. #config['gamma']
 lead_variable = config['lead_variable']
 formula = config['formula']
 factor_options = config['factor_options']
@@ -45,8 +45,8 @@ full_model_file = config['full_model_file']
 # load data
 #
 df = pd.read_csv(output_directory + '/data_for_model.csv')
-df = df.sample(frac=0.05)
-print len(df.index)
+#df = df.sample(frac=0.05)
+#print len(df.index)
 
 
 #
@@ -99,7 +99,7 @@ model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsv
 with open(full_model_file + '.pickle', 'w') as f:
     pickle.dump(model, f)
 
-#sys.exit(0)
+sys.exit(0)
 
 #python ~/packages/libsvm-3.22/tools/grid.py -svmtrain ~/packages/libsvm-3.22/svm-train -gnuplot /usr/bin/gnuplot -png output/grid.png -out output/grid.out -b 1 output/FULL_SVM.scaled
 

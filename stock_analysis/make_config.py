@@ -21,8 +21,8 @@ configuration = {
     'seed' : 23423,
     'bad_cutoff_percentile' : 40.,
     'good_cutoff_percentile' : 95.,
-    'number_of_vfolds_to_run' : 5,
-    'cost' : 8.0,
+    'number_of_vfolds_to_run' : 100,
+    'cost' : 0.5,
     'gamma' : 0.5,
 
     'lead_variable' : 'price_percent_diff_1_to_2',
