@@ -90,11 +90,7 @@ for close in sorted(close_to_volume.keys()):
     #
     # need to somehow get close_lagged
     #
-    close_series = df_close.ix[(yesterday + datetime.timedelta(days=spearmanr_lags + -1 * database_lags)):yesterday,:]['Adj Close']
-
-    close_series_partial = close_series.ix[(close_series.index[database_lags]):,]
-
-    close_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(close_series_partial[0:-1], close_series_partial[1:])]
+    close_series, close_series_partial, close_series_diff = sa.get_current_close(df_close, yesterday, spearmanr_lags, database_lags)
 
 
     #
@@ -103,12 +99,10 @@ for close in sorted(close_to_volume.keys()):
     volume_feature_list = []
     for volume in sorted(close_to_volume[close].keys()):
         df_volume = have_df[volume]
-        volume_series = df_volume.ix[(yesterday + datetime.timedelta(days=spearmanr_lags + -1 * database_lags)):yesterday,:]['Volume']
 
-        volume_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(volume_series[0:-1], volume_series[1:])]
-        last_diff = volume_series_diff[-1]
-
-        volume_series_partial = volume_series.ix[(volume_series.index[0]):(volume_series.index[-1 * database_lags - 1]),]
+        volume_series, volume_series_diff, last_diff, volume_series_partial = sa.get_current_volume(df_volume, yesterday, spearmanr_lags, database_lags)
+        if last_diff == None or str(type(volume_series_partial)) == '<type \'NoneType\'>':
+            continue
 
         if len(close_series_partial) == len(volume_series_partial):
 
@@ -164,6 +158,7 @@ os.system('cp ' + temp_dir + '/to_score.csv output')
 # remove our temporary directory
 #
 os.system('rm -R ' + temp_dir)
+
 
 
 

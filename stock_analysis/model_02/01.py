@@ -155,10 +155,15 @@ if match:
             try:
                 close_series_y = df_close.ix[(ts + datetime.timedelta(days=spearmanr_lags)):(ts + datetime.timedelta(days=database_lags)),:]['Adj Close']
                 percent_diff_lead_1_to_lead_2 = 100. * (close_series_y[-1] - close_series_y[-2]) / close_series_y[-2]
-                close_series_diff_y = [100. * (j - i) / (i + 1.) for i, j in zip(close_series_y[0:-1], close_series_y[1:])]
-                close_lagged = close_series_diff_y[database_lags:]
+                #close_series_diff_y = [100. * (j - i) / (i + 1.) for i, j in zip(close_series_y[0:-1], close_series_y[1:])]
+                #close_lagged = close_series_diff_y[database_lags:]
             except:
                 continue
+
+            #
+            # get "current" close information
+            #
+            close_series, close_series_partial, close_series_diff = sa.get_current_close(df_close, ts, spearmanr_lags, database_lags)
 
             #
             # iterate through the "volume" stocks associated with "close" stock
@@ -166,18 +171,12 @@ if match:
             volume_feature_list = []
             for volume in volume_list:
                 df_volume = have_df[volume]
-                volume_series = df_volume.ix[(ts + datetime.timedelta(days=spearmanr_lags)):ts,:]['Volume']
-
-                volume_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(volume_series[0:-1], volume_series[1:])]
-
-                
-                if len(volume_series_diff) == 0:
+                volume_series, volume_series_diff, last_diff, volume_series_partial = sa.get_current_volume(df_volume, ts, spearmanr_lags, database_lags)
+                if last_diff == None or str(type(volume_series_partial)) == '<type \'NoneType\'>':
                     continue
-                else:
-                    last_diff = volume_series_diff[-1]
 
-                if len(close_series_y) == len(volume_series) + database_lags:
-                    volume_value = sa.compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_series, close_lagged, spearman_p_cutoff, last_diff)
+                if len(close_series_partial) == len(volume_series_partial):
+                    volume_value = sa.compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_series_partial, close_series_diff, spearman_p_cutoff, last_diff)
                     if volume_value != None:
                         volume_feature_list.append(volume_value)
 
