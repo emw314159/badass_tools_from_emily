@@ -7,15 +7,14 @@ import pprint
 import pickle
 import pprint as pp
 from neo4j.v1 import GraphDatabase, basic_auth
-from numpy import percentile, mean
-from scipy.stats import spearmanr
 import datetime
-from math import log
+
 
 #
 # import my own python tools
 #
 from badass_tools_from_emily.misc import weekday_map
+import badass_tools_from_emily.stock_analysis.functions as sa
 
 #
 # user settings
@@ -64,7 +63,6 @@ else:
     with open('output/volume_events.pickle') as f:
         volume_events = pickle.load(f)
 
-
 #
 # get close for each volume (from database)
 #
@@ -73,8 +71,7 @@ if search_database:
     #
     # initialize database search
     #
-    driver = GraphDatabase.driver('bolt://localhost:7687', auth=basic_auth(user, password))
-    session = driver.session()
+    driver, session = sa.initiate_database_connection(user, password)
     database_content = {}
     volume_to_close = {}
     close_to_volume = {}
@@ -83,24 +80,8 @@ if search_database:
     # iterate through the "volume" stocks where events occurred
     #
     for volume in volume_events.keys():
-        volume_to_close[volume] = {}
-
-        #
-        # find the related "close" stocks
-        #
-        cmd = 'MATCH (volume:COMPANY)-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]->(close:COMPANY) WHERE r.lag = ' + str(database_lags) + ' AND volume.id = \'' + volume + '\' RETURN volume.id AS volume, close.id AS close, r.p_log_10 AS p_log_10;'
-
-        result = session.run(cmd)
-
-        for record in result:
-            close = record['close']
-            p_log_10 = record['p_log_10']
-            volume_to_close[volume][close] = p_log_10
-
-            if not close_to_volume.has_key(close):
-                close_to_volume[close] = {}
-            close_to_volume[close][volume] = p_log_10
-
+        sa.find_volume_info_in_database(volume, volume_to_close, close_to_volume)
+        
     #
     # save "volume" stock to "close" stock relationships
     #
@@ -166,10 +147,16 @@ if match:
         #
         for ts in close_events[close]:
 
+            # TEMP NOTE:  In practice, "ts" will be yesterday and we won't pull two days ahead
+
             #
-            # get the time series for the "close" stock for that date
+            # get our y value
             #
-            close_series = df_close.ix[(ts + datetime.timedelta(days=spearmanr_lags)):(ts + datetime.timedelta(days=database_lags)),:]['Adj Close']
+            try:
+                close_series_y = df_close.ix[(ts + datetime.timedelta(days=spearmanr_lags)):(ts + datetime.timedelta(days=database_lags)),:]['Adj Close']
+                percent_diff_lead_1_to_lead_2 = 100. * (close_series_y[-1] - close_series_y[-2]) / close_series_y[-2]
+            except:
+                continue
 
             #
             # iterate through the "volume" stocks associated with "close" stock
@@ -177,87 +164,32 @@ if match:
             volume_feature_list = []
             for volume in volume_list:
                 df_volume = have_df[volume]
-
-                #
-                # get the time series for the "volume" stock for that date
-                #
                 volume_series = df_volume.ix[(ts + datetime.timedelta(days=spearmanr_lags)):ts,:]['Volume']
-
-                #
-                # calculate information about that volume
-                #
-                if len(close_series) == len(volume_series) + database_lags:
-                    p_log_10 = -1. * close_to_volume[close][volume]
-                    
-                    close_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(close_series[0:-1], close_series[1:])]
-                    volume_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(volume_series[0:-1], volume_series[1:])]
-
-                    close_lagged = close_series_diff[database_lags:]
-                    volume_lagged = volume_series_diff
-
-                    r, p = spearmanr(close_lagged, volume_lagged)
-                    
-                    if p > spearman_p_cutoff:
-                        r = 0.
-                        continue
-
-                    try:
-                        last_volume_lagged = volume_lagged[-1]
-                    except:
-                        continue
-
-                    volume_feature_list.append( p_log_10 * r * last_volume_lagged )
+                if len(close_series_y) == len(volume_series) + database_lags:
+                    volume_value = sa.compute_per_volume_metric(df_volume, close_to_volume)
+                    if volume_value != None:
+                        volume_feature_list.append(volume_value)
 
             #
             # Now we have complete analyzing the "volume" stocks related to the "close" stock.
             # Time to summarize results into an event list for modeling.
             #
             if len(volume_feature_list) != 0:
-                percentile_list = percentile(volume_feature_list, [0., 25., 50., 75., 100.])
 
                 # general features
                 weekday = weekday_map[ts.to_pydatetime().weekday()]
                 date_for_reference = str(ts.to_pydatetime().date())
 
                 # volume list features 
-                mean_median_diff = mean(volume_feature_list) - percentile_list[2]
-                p_0 = percentile_list[0]
-                p_25 = percentile_list[1]
-                p_50 = percentile_list[2]
-                p_75 = percentile_list[3]
-                p_100 = percentile_list[4]
-                len_features_list = len(volume_feature_list)
+                ev_volume = sa.summarize_volume_features(volume_feature_list)
 
                 # close features
-                try:
-                    percent_diff_lead_1_to_lead_2 = 100. * (close_series[-1] - close_series[-2]) / close_series[-2]
-                except:
-                    continue
+                ev_close = sa.compute_close_metrics(df_close)
 
-                lag_0 = close_series_diff[-3]
-                lag_1 = close_series_diff[-4]
-                lag_2 = close_series_diff[-5]
-                lag_3 = close_series_diff[-6]
-                lag_4 = close_series_diff[-7]
-                lag_5 = close_series_diff[-8]
-                try:
-                    percent_high_year = 100. * max(df_close.ix[(ts + datetime.timedelta(days=-365)):(ts + datetime.timedelta(days=-1)),:]['Adj Close']) / df_close.ix[ts + datetime.timedelta(days=-1 * database_lags)]['Adj Close']
-                    percent_high_quarter = 100. * max(df_close.ix[(ts + datetime.timedelta(days=int(-365/4))):(ts + datetime.timedelta(days=-1)),:]['Adj Close']) / df_close.ix[ts + datetime.timedelta(days=-1 * database_lags)]['Adj Close']
-                    percent_high_month = 100. * max(df_close.ix[(ts + datetime.timedelta(days=int(-365/12))):(ts + datetime.timedelta(days=-1)),:]['Adj Close']) / df_close.ix[ts + datetime.timedelta(days=-1 * database_lags)]['Adj Close']
-                except:
-                    continue
-                                        
                 #
                 # create event
                 #
                 ev = {
-                    'mean_median_diff' : mean_median_diff,
-                    'p_0' : p_0,
-                    'p_25' : p_25,
-                    'p_50' : p_50,
-                    'p_75' : p_75,
-                    'p_100' : p_100,
-                    'len_features_list' : len_features_list,
                     'percent_diff_lead_1_to_lead_2' : percent_diff_lead_1_to_lead_2,
                     'lag_0' : lag_0,
                     'lag_1' : lag_1,
@@ -272,7 +204,15 @@ if match:
                     'date' : date_for_reference,
                     'weekday' : weekday,
                     }
-                events.append(ev)
+
+                for key in ev_volume.keys():
+                    events[key] = ev_volume[key]
+
+                if ev_close != {}:
+                    for key in ev_close.keys():
+                    events[key] = ev_close[key]
+
+                    events.append(ev)
 
         #
         # save temporary results
