@@ -50,11 +50,11 @@ class linear_wrapper(object):
 # logistic regression
 #
 class logit_wrapper(object):
-    def __init__(self, y, X):
+    def __init__(self, y, X, method='newton'):
         from statsmodels.discrete import discrete_model
         self.X_header = list(X.columns.values)
         self.y_header = list(y.columns.values)
-        self.model = discrete_model.Logit(y, X).fit()
+        self.model = discrete_model.Logit(y, X).fit(method=method)
     def predict(self, X):
         return self.model.predict(X) 
 
