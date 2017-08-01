@@ -134,12 +134,20 @@ def compute_close_metrics(df_close, ts):
 # get "current" close information
 #
 def get_current_close(df_close, ts, spearmanr_lags, database_lags):
-    close_series = df_close.ix[(ts + datetime.timedelta(days=spearmanr_lags + -1 * database_lags)):ts,:]['Adj Close']
 
-    close_series_partial = close_series.ix[(close_series.index[database_lags]):,]
+    fail = False
+    
+    try:
+        close_series = df_close.ix[(ts + datetime.timedelta(days=spearmanr_lags + -1 * database_lags)):ts,:]['Adj Close']
+        close_series_partial = close_series.ix[(close_series.index[database_lags]):,]
+        close_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(close_series_partial[0:-1], close_series_partial[1:])]
+    except:
+        fail = True
+        close_series = None
+        close_series_partial = None
+        close_series_diff = None
 
-    close_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(close_series_partial[0:-1], close_series_partial[1:])]
-    return close_series, close_series_partial, close_series_diff
+    return close_series, close_series_partial, close_series_diff, fail
 
 #
 # get "current" volume information

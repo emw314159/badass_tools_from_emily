@@ -90,8 +90,9 @@ for close in sorted(close_to_volume.keys()):
     #
     # need to somehow get close_lagged
     #
-    close_series, close_series_partial, close_series_diff = sa.get_current_close(df_close, yesterday, spearmanr_lags, database_lags)
-
+    close_series, close_series_partial, close_series_diff, fail = sa.get_current_close(df_close, yesterday, spearmanr_lags, database_lags)
+    if fail:
+        continue
 
     #
     # iterate through volumes associated with the close

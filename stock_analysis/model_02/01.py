@@ -163,7 +163,9 @@ if match:
             #
             # get "current" close information
             #
-            close_series, close_series_partial, close_series_diff = sa.get_current_close(df_close, ts, spearmanr_lags, database_lags)
+            close_series, close_series_partial, close_series_diff, fail = sa.get_current_close(df_close, ts, spearmanr_lags, database_lags)
+            if fail:
+                continue
 
             #
             # iterate through the "volume" stocks associated with "close" stock
