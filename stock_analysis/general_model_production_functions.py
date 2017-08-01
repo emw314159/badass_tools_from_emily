@@ -52,12 +52,12 @@ def compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_
     if p > spearman_p_cutoff:
         r = 0.
         return_value = None
-
-    try:
-        last_volume_lagged = volume_lagged[-1]
-        return_value = p_log_10 * r * last_volume_lagged
-    except:
-        return_value = None
+    else:
+        try:
+            last_volume_lagged = volume_lagged[-1]
+            return_value = p_log_10 * r * last_volume_lagged
+        except:
+            return_value = None
             
     return return_value
         

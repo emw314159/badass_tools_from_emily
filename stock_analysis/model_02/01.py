@@ -22,6 +22,7 @@ reorganize = False
 search_database = False
 match = True
 
+output_directory = 'output'
 user = 'neo4j'
 password = 'aoeuI444'
 database_lags = 2
@@ -51,7 +52,7 @@ if reorganize:
     #
     # save volume_events
     #
-    with open('output/volume_events.pickle', 'w') as f:
+    with open(output_directory + '/volume_events.pickle', 'w') as f:
         pickle.dump(volume_events, f)
 
 else:
@@ -59,7 +60,7 @@ else:
     #
     # load volume_events
     #
-    with open('output/volume_events.pickle') as f:
+    with open(output_directory + '/volume_events.pickle') as f:
         volume_events = pickle.load(f)
 
 #
@@ -84,9 +85,9 @@ if search_database:
     #
     # save "volume" stock to "close" stock relationships
     #
-    with open('output/close_to_volume.pickle', 'w') as f:
+    with open(output_directory + '/close_to_volume.pickle', 'w') as f:
         pickle.dump(close_to_volume, f)
-    with open('output/volume_to_close.pickle', 'w') as f:
+    with open(output_directory + '/volume_to_close.pickle', 'w') as f:
         pickle.dump(volume_to_close, f)
 
 
@@ -95,9 +96,9 @@ else:
     #
     # load "volume" stock to "close" stock relationships
     #
-    with open('output/close_to_volume.pickle') as f:
+    with open(output_directory + '/close_to_volume.pickle') as f:
         close_to_volume = pickle.load(f)
-    with open('output/volume_to_close.pickle') as f:
+    with open(output_directory + '/volume_to_close.pickle') as f:
         volume_to_close = pickle.load(f)
 
 #
@@ -200,7 +201,6 @@ if match:
                 for key in ev_volume.keys():
                     ev[key] = ev_volume[key]
 
-
                 if ev_close != {}:
                     for key in ev_close.keys():
                         ev[key] = ev_close[key]
@@ -211,15 +211,15 @@ if match:
         # save temporary results
         #
         df_temp = pd.DataFrame(events)
-        df_temp.to_csv('output/TEMP_data_for_modeling.csv', index=False)
+        df_temp.to_csv(output_directory + '/TEMP_data_for_modeling.csv', index=False)
 
     #
     # save full results
     #
-    with open('output/events.pickle', 'w') as f:
+    with open(output_directory + '/events.pickle', 'w') as f:
         pickle.dump(events, f)
     df = pd.DataFrame(events)
-    df.to_csv('output/data_for_modeling.csv', index=False)
+    df.to_csv(output_directory + '/data_for_modeling.csv', index=False)
 
 
 

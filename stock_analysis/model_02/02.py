@@ -32,7 +32,7 @@ compute_rf = True
 
 #formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday)'
 
-formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + p_50 + percent_high_month + p_0 + p_100 + len_features_list + mean_median_diff'
+formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + p_50 + percent_high_month + p_0 + p_100 + len_features_list + mean_median_diff + percent_high_year'
 
 
 
