@@ -180,7 +180,11 @@ if match:
                 len_features_list = len(volume_feature_list)
 
                 # close features
-                percent_diff_lead_1_to_lead_2 = 100. * (close_series_diff[-1] - close_series_diff[-2]) / (close_series_diff[-2] + 1.)
+                try:
+                    percent_diff_lead_1_to_lead_2 = 100. * (close_series[-1] - close_series[-2]) / close_series[-2]
+                except:
+                    continue
+
                 lag_0 = close_series_diff[-3]
                 lag_1 = close_series_diff[-4]
                 lag_2 = close_series_diff[-5]

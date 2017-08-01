@@ -23,14 +23,16 @@ import badass_tools_from_emily.machine_learning.random_forest as rf
 #
 random.seed(234)
 output_directory = 'output'
-bad_cutoff_percentile = 33.
-good_cutoff_percentile = 66.
-number_of_vfolds_to_run = 5
-cost = 128.
-gamma = 0.00048828125
+bad_cutoff_percentile = 40.
+good_cutoff_percentile = 85.
+number_of_vfolds_to_run = 100
+cost = 8192.
+gamma = 0.125
 lead_variable = 'percent_diff_lead_1_to_lead_2'
 file_to_load = 'output/TEMP_data_for_modeling.csv'
 #file_to_load = 'output/FREEZE.csv'
+
+compute_rf = False
 
 
 libsvm_root = '/Users/emily/Desktop/packages/libsvm-3.22'
@@ -39,8 +41,9 @@ full_model_file = 'output/FULL_SVM'
 
 formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday)'
 
-formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + p_50 + percent_high_year + percent_high_quarter + percent_high_month'
+#formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + p_50 + percent_high_year'
 
+formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + p_50 + percent_high_month + p_0 + p_100'
 
 
 factor_options = {
@@ -113,37 +116,48 @@ y, X = ml.categorize(formula, factor_options, df_to_use)
 #
 # random forest
 #
-#model = ml.random_forest_classification_wrapper(y, X, n_jobs=1000)
-#feature_importances = model.model.feature_importances_
-#fi_dict = {}
-#for h, fi in zip(list(X.columns.values), feature_importances):
-#    fi_dict[h] = fi
-#rf.plot_feature_importances(fi_dict, 'Relative Feature Importances', '/Users/emily/Desktop/stocks/feature_importances.png')
+if compute_rf:
+    yrf, Xrf = ml.categorize(formula, factor_options, df_to_use, add_intercept=False)
+    model = ml.random_forest_classification_wrapper(yrf, Xrf, n_jobs=2000)
+    feature_importances = model.model.feature_importances_
+    fi_dict = {}
+    for h, fi in zip(list(Xrf.columns.values), feature_importances):
+        fi_dict[h] = fi
+    rf.plot_feature_importances(fi_dict, 'Relative Feature Importances', '/Users/emily/Desktop/stocks/feature_importances.png')
+
+
+
+#
+# get full model for grid.py
+#
+#model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsvm_root=libsvm_root)
+#with open(full_model_file + '.pickle', 'w') as f:
+#    pickle.dump(model, f)
+
 #sys.exit(0)
 
+#python ~/Desktop/packages/libsvm-3.22/tools/grid.py -svmtrain ~/Desktop//packages/libsvm-3.22/svm-train -gnuplot "null" -out output/grid.out -b 1 output/FULL_SVM.scaled
 
-# #
-# # get full model for grid.py
-# #
-# model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsvm_root=libsvm_root)
-# with open(full_model_file + '.pickle', 'w') as f:
-#     pickle.dump(model, f)
 
-# #sys.exit(0)
+#
+# get full model for logistic regression
+#
+model = ml.logit_wrapper(y, X)
+with open('output/logit_model.pickle', 'w') as f:
+    pickle.dump(model, f)
 
-# #python ~/Desktop/packages/libsvm-3.22/tools/grid.py -svmtrain ~/Desktop//packages/libsvm-3.22/svm-train -gnuplot "null" -out output/grid.out -b 1 output/FULL_SVM.scaled
 
 
 #
 # cross-validate
 #
-# results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV', libsvm_root=libsvm_root)
+#results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV', libsvm_root=libsvm_root)
 results = ml.v_fold(ml.logit_wrapper, y, X, number_of_vfolds_to_run)
 
 pp.pprint(results['auc_list'])
 
 
-ml.plot_auc_histogram(results, 'Cross-Validation AUC Histogram', '/Users/emily/Desktop/stocks/HIST_AUC.png')
+ml.plot_auc_histogram(results, 'Cross-Validation AUC Histogram', '/Users/emily/Desktop/stocks/HIST_AUC.png', color='lightblue')
 
 
 
