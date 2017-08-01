@@ -31,7 +31,7 @@ output_directory = config['output_directory']
 quote_data_directory = config['quote_data_directory']
 volume_threshold = config['volume_threshold']
 database_lags = config['database_lags']
-calculate_events = True
+calculate_events = False
 calculate_database = True
 calculate_match = True
 
@@ -72,7 +72,7 @@ symbols_with_event = {}
 
 if calculate_events:
     events = []
-    for symbol in symbol_list[0:15]:
+    for symbol in symbol_list:
         df = load_and_prepare_stock_data(symbol)
         start_date = df.index[0]
         end_date = df.index[-1]

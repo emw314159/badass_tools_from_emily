@@ -424,13 +424,13 @@ if predict:
     for score in scores_reversed:
         for close in sorted(collapsed[score].keys()):
             result = {}
-            result['high_score'] = score
+            result['high_score'] = round(score, 3)
             result['close'] = close
 
             all_scores = sorted(close_to_scores[close].keys())
             all_scores.reverse()
 
-            result['all_scores'] = ', '.join([str(round(x, 3)) for x in all_scores])
+            result['all_scores'] = [round(x, 3) for x in all_scores]
 
             th_list = list(thresholds['thresholds'])
             for i, th in enumerate(th_list):
@@ -441,9 +441,9 @@ if predict:
 
             report.append(result)
 
-    report_df = pd.DataFrame(report)
+    with open(runtime_output_directory + '/report.json', 'w') as f:
+        json.dump(report, f)
 
-    print report_df
 
 
 
