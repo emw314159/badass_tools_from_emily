@@ -39,7 +39,7 @@ def find_volume_info_in_database(volume, volume_to_close, close_to_volume, datab
 #
 # compute per volume metric
 #
-def compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_series, close_lagged, spearman_p_cutoff):
+def compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_series, close_lagged, spearman_p_cutoff, last_diff):
     return_value = None
 
     p_log_10 = -1. * close_to_volume[close][volume]
@@ -54,8 +54,7 @@ def compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_
         return_value = None
     else:
         try:
-            last_volume_lagged = volume_lagged[-1]
-            return_value = p_log_10 * r * last_volume_lagged
+            return_value = p_log_10 * r * last_diff
         except:
             return_value = None
             
@@ -88,11 +87,11 @@ def summarize_volume_features(volume_feature_list):
 #
 # compute close metrics
 #
-def compute_close_metrics(df_close, ts, database_lags):
+def compute_close_metrics(df_close, ts):
 
     return_dict = {}
 
-    close_series = df_close['Adj Close']
+    close_series = df_close.ix[(ts + datetime.timedelta(days=-366)):ts,:]['Adj Close']
     close_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(close_series[0:-1], close_series[1:])]
 
     lag_0 = close_series_diff[-1]
@@ -104,9 +103,13 @@ def compute_close_metrics(df_close, ts, database_lags):
 
     no_percent = False
     try:
-        percent_high_year = 100. * max(df_close.ix[(ts + datetime.timedelta(days=-365)):(ts + datetime.timedelta(days=-1)),:]['Adj Close']) / df_close.ix[ts + datetime.timedelta(days=-1 * database_lags)]['Adj Close']
-        percent_high_quarter = 100. * max(df_close.ix[(ts + datetime.timedelta(days=int(-365/4))):(ts + datetime.timedelta(days=-1)),:]['Adj Close']) / df_close.ix[ts + datetime.timedelta(days=-1 * database_lags)]['Adj Close']
-        percent_high_month = 100. * max(df_close.ix[(ts + datetime.timedelta(days=int(-365/12))):(ts + datetime.timedelta(days=-1)),:]['Adj Close']) / df_close.ix[ts + datetime.timedelta(days=-1 * database_lags)]['Adj Close']
+
+        percent_high_year = 100. * max(close_series.ix[(ts + datetime.timedelta(days=-366)):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
+
+        percent_high_quarter = 100. * max(close_series.ix[(ts + datetime.timedelta(days=int(round(-366./4.)))):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
+
+        percent_high_month = 100. * max(close_series.ix[(ts + datetime.timedelta(days=int(round(-366./12.)))):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
+
     except:
         no_percent = True
         
