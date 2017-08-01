@@ -132,6 +132,7 @@ def v_fold(function, y, X, number_of_v_fold_cycles, classification=True, verbose
         model = function(y_training, X_training, **kwargs)
         y_predicted = model.predict(X_testing)
 
+
         if classification:
             fpr, tpr, thresholds = roc_curve(y_testing, y_predicted)
             roc_auc = auc(fpr, tpr)
@@ -207,10 +208,10 @@ def example():
 #
 # plot AUC Histogram
 #
-def plot_auc_histogram(results_from_v_fold, title, output_file):
+def plot_auc_histogram(results_from_v_fold, title, output_file, color='purple'):
     auc_list = results_from_v_fold['auc_list']
     plt.figure()
-    plt.hist(auc_list, color='purple')
+    plt.hist(auc_list, color=color)
     plt.title(title)
     plt.xlabel('Area Under ROC Curve')
     plt.ylabel('Frequency')
