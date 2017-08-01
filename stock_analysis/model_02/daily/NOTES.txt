@@ -1,0 +1,6 @@
+Pipeline:
+
+python initialize.py config.json
+python query_database_for_movers.py config.json
+python get_two_day_stocks.py config.json
+

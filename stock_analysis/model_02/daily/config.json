@@ -1,0 +1,7 @@
+{
+	"user" : "neo4j",
+	"password" : "aoeuI444",
+	"database_lags" : 2,
+	"runtime_output_directory" : "/Users/emily/badass_tools_from_emily/stock_analysis/model_02/daily/output",
+	"volume_threshold" : 500000
+}
