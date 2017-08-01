@@ -23,17 +23,19 @@ random.seed(234)
 output_directory = 'output'
 plot_directory = '/Users/emily/Desktop/stocks'
 bad_cutoff_percentile = 40.
-good_cutoff_percentile = 85.
+good_cutoff_percentile = 95.
 number_of_vfolds_to_run = 100
 number_of_random_forest_jobs = 2000
 lead_variable = 'percent_diff_lead_1_to_lead_2'
 file_to_load = 'output/TEMP_data_for_modeling.csv'
-compute_rf = True
+compute_rf = False
 
-#formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday)'
+full_model_file = 'output/FULL_SVM'
+cost = 512.
+gamma = 2.
+libsvm_root = '/Users/emily/Desktop/packages/libsvm-3.22'
 
-formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + p_50 + percent_high_month + p_0 + p_100 + len_features_list + mean_median_diff + percent_high_year'
-
+formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday)'
 
 
 
@@ -95,7 +97,8 @@ df_to_use['y'] = y
 #
 # set up model
 #
-y, X = ml.categorize(formula, factor_options, df_to_use)
+y, X = ml.categorize(formula, factor_options, df_to_use, add_intercept=False)
+#y, X = ml.categorize(formula, factor_options, df_to_use)
 
 #
 # figure out which features matter the most using random forest classification
@@ -109,17 +112,28 @@ if compute_rf:
         fi_dict[h] = fi
     rf.plot_feature_importances(fi_dict, 'Relative Feature Importances', plot_directory + '/feature_importances.png')
 
-#
-# get full model for logistic regression
-#
-model = ml.logit_wrapper(y, X)
-with open(output_directory + '/logit_model.pickle', 'w') as f:
-    pickle.dump(model, f)
+# #
+# # get full model for logistic regression
+# #
+# model = ml.logit_wrapper(y, X)
+# with open(output_directory + '/logit_model.pickle', 'w') as f:
+#     pickle.dump(model, f)
 
-#
-# cross-validate
-#
-results = ml.v_fold(ml.logit_wrapper, y, X, number_of_vfolds_to_run)
+model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsvm_root=libsvm_root)
+
+#python /Users/emily/Desktop/packages/libsvm-3.22/tools/grid.py -svmtrain /Users/emily/Desktop/packages/libsvm-3.22/svm-train -gnuplot /Users/emily/Desktop/packages/gnuplot-5.0.6/src/gnuplot -png output/grid.png -out output/grid.out -b 1 output/FULL_SVM.scaled
+
+
+
+# #
+# # cross-validate
+# #
+results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV', libsvm_root=libsvm_root)
+
+# results = ml.v_fold(ml.logit_wrapper, y, X, number_of_vfolds_to_run)
+
+
+
 
 print
 pp.pprint(results['auc_list'])
