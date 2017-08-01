@@ -6,7 +6,6 @@ import pandas as pd
 import pprint
 import pickle
 import pprint as pp
-from neo4j.v1 import GraphDatabase, basic_auth
 import datetime
 
 
@@ -14,14 +13,14 @@ import datetime
 # import my own python tools
 #
 from badass_tools_from_emily.misc import weekday_map
-import badass_tools_from_emily.stock_analysis.functions as sa
+import badass_tools_from_emily.stock_analysis.general_model_production_functions as sa
 
 #
 # user settings
 #
 reorganize = False
 search_database = False
-match = False
+match = True
 
 user = 'neo4j'
 password = 'aoeuI444'
@@ -80,7 +79,7 @@ if search_database:
     # iterate through the "volume" stocks where events occurred
     #
     for volume in volume_events.keys():
-        sa.find_volume_info_in_database(volume, volume_to_close, close_to_volume)
+        sa.find_volume_info_in_database(volume, volume_to_close, close_to_volume, database_lags, session, driver)
         
     #
     # save "volume" stock to "close" stock relationships
@@ -155,6 +154,8 @@ if match:
             try:
                 close_series_y = df_close.ix[(ts + datetime.timedelta(days=spearmanr_lags)):(ts + datetime.timedelta(days=database_lags)),:]['Adj Close']
                 percent_diff_lead_1_to_lead_2 = 100. * (close_series_y[-1] - close_series_y[-2]) / close_series_y[-2]
+                close_series_diff_y = [100. * (j - i) / (i + 1.) for i, j in zip(close_series_y[0:-1], close_series_y[1:])]
+                close_lagged = close_series_diff_y[database_lags:]
             except:
                 continue
 
@@ -166,7 +167,7 @@ if match:
                 df_volume = have_df[volume]
                 volume_series = df_volume.ix[(ts + datetime.timedelta(days=spearmanr_lags)):ts,:]['Volume']
                 if len(close_series_y) == len(volume_series) + database_lags:
-                    volume_value = sa.compute_per_volume_metric(df_volume, close_to_volume)
+                    volume_value = sa.compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_series, close_lagged, spearman_p_cutoff)
                     if volume_value != None:
                         volume_feature_list.append(volume_value)
 
@@ -184,33 +185,25 @@ if match:
                 ev_volume = sa.summarize_volume_features(volume_feature_list)
 
                 # close features
-                ev_close = sa.compute_close_metrics(df_close)
+                ev_close = sa.compute_close_metrics(df_close, ts, database_lags)
 
                 #
                 # create event
                 #
                 ev = {
                     'percent_diff_lead_1_to_lead_2' : percent_diff_lead_1_to_lead_2,
-                    'lag_0' : lag_0,
-                    'lag_1' : lag_1,
-                    'lag_2' : lag_2,
-                    'lag_3' : lag_3,
-                    'lag_4' : lag_4,
-                    'lag_5' : lag_5,
-                    'percent_high_year' : percent_high_year,
-                    'percent_high_quarter' : percent_high_quarter,
-                    'percent_high_month' : percent_high_month,
                     'symbol' : close,
                     'date' : date_for_reference,
                     'weekday' : weekday,
                     }
 
                 for key in ev_volume.keys():
-                    events[key] = ev_volume[key]
+                    ev[key] = ev_volume[key]
+
 
                 if ev_close != {}:
                     for key in ev_close.keys():
-                    events[key] = ev_close[key]
+                        ev[key] = ev_close[key]
 
                     events.append(ev)
 
