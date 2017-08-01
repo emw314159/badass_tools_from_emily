@@ -147,14 +147,21 @@ if match:
 
                     r, p = spearmanr(close_lagged, volume_lagged)
                     
+                    if p > spearman_p_cutoff:
+                        r = 0.
+                        continue
+
+                    #try:
+                    #    sp_log_10 = -1. * log(p, 10.)
+                    #except:
+                    #    sp_log_10 = 0.
+
                     try:
-                        sp_log_10 = -1. * log(p, 10.)
+                        last_volume_lagged = volume_lagged[-1]
                     except:
-                        sp_log_10 = 0.
+                        continue
 
-                    last_volume_lagged = volume_lagged[-1]
-
-                    volume_feature_list.append( p_log_10 * r * sp_log_10 * last_volume_lagged )
+                    volume_feature_list.append( p_log_10 * r * last_volume_lagged )
 
             if len(volume_feature_list) != 0:
                 percentile_list = percentile(volume_feature_list, [0., 25., 50., 75., 100.])
