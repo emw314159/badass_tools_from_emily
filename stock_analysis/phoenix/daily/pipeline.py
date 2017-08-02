@@ -1,5 +1,5 @@
 
-# python badass_tools_from_emily/stock_analysis/model_02/daily/pipeline.py badass_tools_from_emily/stock_analysis/model_02/daily/config.json 
+# python /home/ec2-user/badass_tools_from_emily/stock_analysis/phoenix/daily/pipeline.py /home/ec2-user/badass_tools_from_emily/stock_analysis/phoenix/config.json 
 
 
 
@@ -7,12 +7,12 @@ import sys
 sys.path.insert(0, '/home/ec2-user')
 
 
-import badass_tools_from_emily.stock_analysis.model_02.daily.initialize as initialize
-import badass_tools_from_emily.stock_analysis.model_02.daily.query_database_for_movers as query_database_for_movers
-import badass_tools_from_emily.stock_analysis.model_02.daily.get_two_day_stocks as get_two_day_stocks
-import badass_tools_from_emily.stock_analysis.model_02.daily.get_year_stocks as get_year_stocks
-import badass_tools_from_emily.stock_analysis.model_02.daily.prepare_for_prediction as prepare_for_prediction
-import badass_tools_from_emily.stock_analysis.model_02.daily.predict as predict
+import badass_tools_from_emily.stock_analysis.phoenix.daily.initialize as initialize
+import badass_tools_from_emily.stock_analysis.phoenix.daily.query_database_for_movers as query_database_for_movers
+import badass_tools_from_emily.stock_analysis.phoenix.daily.get_two_day_stocks as get_two_day_stocks
+import badass_tools_from_emily.stock_analysis.phoenix.daily.get_year_stocks as get_year_stocks
+import badass_tools_from_emily.stock_analysis.phoenix.daily.prepare_for_prediction as prepare_for_prediction
+import badass_tools_from_emily.stock_analysis.phoenix.daily.predict as predict
 
 initialize.initialize()
 query_database_for_movers.query_database_for_movers()

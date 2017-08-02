@@ -19,7 +19,7 @@ def prepare_for_prediction():
     #
     # import my libraries
     #
-    import badass_tools_from_emily.stock_analysis.general_model_production_functions as sa
+    import badass_tools_from_emily.stock_analysis.phoenix.general_model_production_functions as sa
     from badass_tools_from_emily.misc import weekday_map
 
     #
