@@ -1,4 +1,9 @@
 
+import sys
+sys.path.insert(0, '/home/ec2-user')
+
+
+
 #
 # import standard libraries
 #
@@ -18,8 +23,8 @@ import badass_tools_from_emily.stock_analysis.general_model_production_functions
 #
 # user settings
 #
-reorganize = False
-search_database = False
+reorganize = True
+search_database = True
 match = True
 
 output_directory = 'output'
@@ -28,6 +33,7 @@ password = 'aoeuI444'
 database_lags = 2
 spearmanr_lags = -100
 spearman_p_cutoff = 0.1
+data_directory = '/home/ec2-user/data'
 
 #
 # reorganize events dictionary
@@ -37,7 +43,7 @@ if reorganize:
     #
     # this is calculated by ../model_part_01.py
     #
-    with open('/Users/emily/data/events.pickle') as f:
+    with open(data_directory + '/events.pickle') as f:
         events = pickle.load(f)
 
     #
@@ -128,7 +134,7 @@ if match:
         # load historical data for "close" stock
         #
         if not have_df.has_key(close):
-            with open('../quote_data/' + close + '.pickle') as f:
+            with open(data_directory + '/quote_data/' + close + '.pickle') as f:
                 have_df[close] = pickle.load(f)
         df_close = have_df[close]
 
@@ -138,7 +144,7 @@ if match:
         volume_list = []
         for volume in sorted(close_to_volume[close].keys()):
             if not have_df.has_key(volume):
-                with open('../quote_data/' + volume + '.pickle') as f:
+                with open(data_directory + '/quote_data/' + volume + '.pickle') as f:
                     have_df[volume] = pickle.load(f)
             volume_list.append(volume)
     
