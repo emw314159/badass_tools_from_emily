@@ -25,7 +25,7 @@ import badass_tools_from_emily.machine_learning.random_forest as rf
 #
 random.seed(234)
 output_directory = 'output'
-plot_directory = '/Users/emily/Desktop/stocks'
+plot_directory = '/home/ec2-user/images'
 bad_cutoff_percentile = 40.
 good_cutoff_percentile = 95.
 number_of_vfolds_to_run = 5
@@ -34,10 +34,12 @@ lead_variable = 'percent_diff_lead_1_to_lead_2'
 file_to_load = 'output/TEMP_data_for_modeling.csv'
 compute_rf = False
 
-full_model_file = 'output/FULL_SVM'
+models_directory = '/home/ec2-user/models'
+full_model_file = models_directory + '/FULL_SVM'
 cost = 512.
 gamma = 2.
-libsvm_root = '/Users/emily/Desktop/packages/libsvm-3.22'
+libsvm_root = '/home/ec2-user/packages/libsvm-3.22'
+
 
 formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday)'
 
@@ -124,6 +126,8 @@ if compute_rf:
 #     pickle.dump(model, f)
 
 model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsvm_root=libsvm_root)
+with open(full_model_file + '.pickle', 'w') as f:
+    pickle.dump(model, f)
 
 #python /Users/emily/Desktop/packages/libsvm-3.22/tools/grid.py -svmtrain /Users/emily/Desktop/packages/libsvm-3.22/svm-train -gnuplot /Users/emily/Desktop/packages/gnuplot-5.0.6/src/gnuplot -png output/grid.png -out output/grid.out -b 1 output/FULL_SVM.scaled
 
