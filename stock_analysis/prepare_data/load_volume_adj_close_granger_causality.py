@@ -9,15 +9,15 @@ import glob
 #
 # user settings
 #
-output_directory = 'output'
-granger_results_directory = 'granger_computations'
-quote_data_directory = 'quote_data'
+output_directory = '/home/ec2-user/data/database'
+granger_results_directory = '/home/ec2-user/data/granger_computations'
+quote_data_directory = '/home/ec2-user/data/quote_data'
 
 
 #
 # get symbol list
 #
-all_symbol_list = sorted([x.split('/')[1].replace('.pickle', '') for x in glob.glob(quote_data_directory + '/*.pickle')])
+all_symbol_list = sorted([x.split('/')[-1].replace('.pickle', '') for x in glob.glob(quote_data_directory + '/*.pickle')])
 
 #
 # write csv for all symbols
@@ -34,18 +34,18 @@ f.close()
 #
 # load data
 #
-close_list = sorted([x.split('/')[1].replace('.json', '') for x in glob.glob(granger_results_directory + '/*.json')])
+close_list = sorted([x.split('/')[-1].replace('.json', '') for x in glob.glob(granger_results_directory + '/*.json')])
 
 #
 # start cypher file and eliminate relationships
 #
-f = open('output/cypher_commands_granger_volume_adj_close.txt', 'w')
+f = open(output_directory + '/cypher_commands_granger_volume_adj_close.txt', 'w')
 f.write('MATCH ()-[r:VOLUME_GRANGER_CAUSES_ADJ_CLOSE]-() DELETE r;' + '\n')
 
 #
 # start CSV file
 #
-f_csv = open('output/granger_volume_adj_close.csv', 'w')
+f_csv = open(output_directory + '/granger_volume_adj_close.csv', 'w')
 f_csv.write(':START_ID,lag:int,p_log_10:float,:END_ID,:TYPE' + '\n')
 
 #
