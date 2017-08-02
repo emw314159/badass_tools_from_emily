@@ -29,7 +29,7 @@ with open(runtime_output_directory + '/end.pickle') as f:
     end = pickle.load(f)
 
 #
-# load volumes that moved yesterday
+# load volumes that move
 #
 with open(runtime_output_directory + '/volume_movers.json') as f:
     volume_movers = json.load(f)
