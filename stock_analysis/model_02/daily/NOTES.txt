@@ -4,4 +4,7 @@ python initialize.py config.json
 python query_database_for_movers.py config.json
 python get_two_day_stocks.py config.json
 python get_year_stocks.py config.json
+python prepare_for_prediction.py config.json
 
+Or just run:
+   python pipeline.py config.json
