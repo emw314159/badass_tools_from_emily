@@ -4,5 +4,7 @@
 	"database_lags" : 2,
 	"runtime_output_directory" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/model_02/daily/output",
 	"runtime_output_directory_year" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/model_02/daily/output/year",
-	"volume_threshold" : 500000
+	"volume_threshold" : 500000,
+    "spearmanr_lags" : -100,
+    "spearman_p_cutoff" : 0.1
 }

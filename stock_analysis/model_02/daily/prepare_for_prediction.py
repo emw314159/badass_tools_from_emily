@@ -31,10 +31,6 @@ def prepare_for_prediction():
     runtime_output_directory = config['runtime_output_directory']
     user = config['user']
     password = config['password']
-
-    #
-    # user settings (relatively permanent)
-    #
     database_lags = config['database_lags']
     spearmanr_lags = config['spearmanr_lags']
     spearman_p_cutoff = config['spearman_p_cutoff']
