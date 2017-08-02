@@ -10,12 +10,12 @@ From my effort to create a graph database:
 
      python load_volume_adj_close_granger_causality.py
 
-#     ~/packages/neo4j-community-3.2.2/bin/neo4j stop
+     ~/packages/neo4j-community-3.2.2/bin/neo4j stop
 
-#     rm -R ~/packages/neo4j-community-3.2.2/data/databases/graph.db
+     rm -R ~/packages/neo4j-community-3.2.2/data/databases/graph.db
 
-#     ~/packages/neo4j-community-3.2.2/bin/neo4j-admin import --relationships:VOLUME_GRANGER_CAUSES_ADJ_CLOSE="/home/ec2-user/data/database/granger_volume_adj_close.csv" --relationships:HAS_SECTOR="/home/ec2-user/data/database/sector_relationships.csv" --relationships:HAS_INDUSTRY="/home/ec2-user/data/database/industry_relationships.csv" --nodes:COMPANY="/home/ec2-user/data/database/company_nodes.csv" --nodes:SECTOR="/home/ec2-user/data/database/sector_nodes.csv" --nodes:INDUSTRY="/home/ec2-user/data/database/industry_nodes.csv" --ignore-missing-nodes=true
+     ~/packages/neo4j-community-3.2.2/bin/neo4j-admin import --relationships:VOLUME_GRANGER_CAUSES_ADJ_CLOSE="/home/ec2-user/data/database/granger_volume_adj_close.csv" --relationships:HAS_SECTOR="/home/ec2-user/data/database/sector_relationships.csv" --relationships:HAS_INDUSTRY="/home/ec2-user/data/database/industry_relationships.csv" --nodes:COMPANY="/home/ec2-user/data/database/company_nodes.csv" --nodes:SECTOR="/home/ec2-user/data/database/sector_nodes.csv" --nodes:INDUSTRY="/home/ec2-user/data/database/industry_nodes.csv" --ignore-missing-nodes=true
 
-#     ~/packages/neo4j-community-3.2.2/bin/neo4j start
+     ~/packages/neo4j-community-3.2.2/bin/neo4j start
 
-#     curl -H "Content-Type: application/json" -X POST -d '{"password":"aoeuI444"}' -uneo4j:neo4j http://localhost:7474/user/neo4j/password
+     curl -H "Content-Type: application/json" -X POST -d '{"password":"aoeuI444"}' -uneo4j:neo4j http://localhost:7474/user/neo4j/password
