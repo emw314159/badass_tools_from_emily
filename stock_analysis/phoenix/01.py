@@ -12,13 +12,20 @@ import pprint
 import pickle
 import pprint as pp
 import datetime
+import json
 
 
 #
 # import my own python tools
 #
 from badass_tools_from_emily.misc import weekday_map
-import badass_tools_from_emily.stock_analysis.general_model_production_functions as sa
+import badass_tools_from_emily.stock_analysis.phoenix.general_model_production_functions as sa
+
+#
+# load configuration
+#
+with open(sys.argv[1]) as f:
+    config = json.load(f)
 
 #
 # user settings
@@ -27,13 +34,13 @@ reorganize = True
 search_database = True
 match = True
 
-output_directory = 'output'
-user = 'neo4j'
-password = 'aoeuI444'
-database_lags = 2
-spearmanr_lags = -100
-spearman_p_cutoff = 0.1
-data_directory = '/home/ec2-user/data'
+output_directory = config['output_directory']
+user = config['user']
+password = config['password']
+database_lags = config['database_lags']
+spearmanr_lags = config['spearmanr_lags']
+spearman_p_cutoff = config['spearman_p_cutoff']
+data_directory = config['data_directory']
 
 #
 # reorganize events dictionary
@@ -161,8 +168,6 @@ if match:
             try:
                 close_series_y = df_close.ix[(ts + datetime.timedelta(days=spearmanr_lags)):(ts + datetime.timedelta(days=database_lags)),:]['Adj Close']
                 percent_diff_lead_1_to_lead_2 = 100. * (close_series_y[-1] - close_series_y[-2]) / close_series_y[-2]
-                #close_series_diff_y = [100. * (j - i) / (i + 1.) for i, j in zip(close_series_y[0:-1], close_series_y[1:])]
-                #close_lagged = close_series_diff_y[database_lags:]
             except:
                 continue
 
