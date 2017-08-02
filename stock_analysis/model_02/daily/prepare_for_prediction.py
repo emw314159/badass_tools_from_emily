@@ -1,3 +1,7 @@
+import sys
+sys.path.insert(0, '/home/ec2-user')
+
+
 
 def prepare_for_prediction():
 
@@ -151,6 +155,9 @@ def prepare_for_prediction():
     df.to_csv(runtime_output_directory + '/to_score.csv', index=False)
 
 
+
+if __name__ == '__main__':
+    prepare_for_prediction()
 
 
 
