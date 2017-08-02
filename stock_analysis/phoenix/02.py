@@ -21,33 +21,31 @@ import badass_tools_from_emily.machine_learning.machine_learning as ml
 import badass_tools_from_emily.machine_learning.random_forest as rf
 
 #
+# load configuration
+#
+with open(sys.argv[1]) as f:
+    config = json.load(f)
+
+#
 # user settings
 #
-random.seed(234)
-output_directory = 'output'
-plot_directory = '/home/ec2-user/images'
-bad_cutoff_percentile = 40.
-good_cutoff_percentile = 95.
-number_of_vfolds_to_run = 5
-number_of_random_forest_jobs = 2000
-lead_variable = 'percent_diff_lead_1_to_lead_2'
-file_to_load = 'output/TEMP_data_for_modeling.csv'
+random.seed(config['random_seed']
+output_directory = config['output_directory']
+plot_directory = config['images_directory']
+buy_bad_cutoff_percentile = config['buy_bad_cutoff_percentile']
+buy_good_cutoff_percentile = config['buy_good_cutoff_percentile']
+number_of_vfolds_to_run = config['number_of_vfolds_to_run']
+number_of_random_forest_jobs = config['number_of_random_forest_jobs']
+file_to_load = config['data_for_modeling_file']
+lead_variable = config['lead_variable']
+full_model_file = config['buy_model_file']
+libsvm_root = config['libsvm_root']
+cost = config['cost']
+gamma = config['gamma']
+formula = config['formula']
+factor_options = config['factor_options']
+
 compute_rf = False
-
-models_directory = '/home/ec2-user/models'
-full_model_file = models_directory + '/FULL_SVM'
-cost = 512.
-gamma = 2.
-libsvm_root = '/home/ec2-user/packages/libsvm-3.22'
-
-
-formula = 'y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday)'
-
-
-
-factor_options = {
-    'weekday' : ['M', 'Tu', 'W', 'Th', 'F']
-    }
 
 #
 # load data
@@ -78,15 +76,15 @@ df = df.ix[idx_list,:].copy()
 #
 print
 print len(df.index)
-print percentile(df[lead_variable], [bad_cutoff_percentile, good_cutoff_percentile])
-bad_cutoff = percentile(df[lead_variable], bad_cutoff_percentile)
-good_cutoff = percentile(df[lead_variable], good_cutoff_percentile)
+print percentile(df[lead_variable], [buy_bad_cutoff_percentile, buy_good_cutoff_percentile])
+buy_bad_cutoff = percentile(df[lead_variable], bad_cutoff_percentile)
+buy_good_cutoff = percentile(df[lead_variable], good_cutoff_percentile)
 print
 
 #
 # apply cutoffs given computed percentiles
 #
-df_to_use = df.ix[(df[lead_variable] <= bad_cutoff) | (df[lead_variable] >= good_cutoff), :].copy()
+df_to_use = df.ix[(df[lead_variable] <= buy_bad_cutoff) | (df[lead_variable] >= buy_good_cutoff), :].copy()
 y = []
 for x in df_to_use[lead_variable]:
     if x <= bad_cutoff:
