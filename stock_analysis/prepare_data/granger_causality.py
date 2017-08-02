@@ -21,9 +21,8 @@ from multiprocessing import Process, Pool
 #
 # user settings
 #
-output_directory = 'output'
-quote_data_directory = 'quote_data'
-granger_results_directory = 'granger_computations'
+quote_data_directory = '/home/ec2-user/data/quote_data'
+granger_results_directory = '/home/ec2-user/data/granger_computations'
 threshold = 0.05
 number_of_lags = 2
 number_of_workers_in_pool = 20
@@ -32,12 +31,12 @@ chunksize = 100
 #
 # get list of symbols we already have computations for
 #
-already_have_list = sorted([x.split('/')[1].replace('.json', '') for x in glob.glob(granger_results_directory + '/*.json')])
+already_have_list = sorted([x.split('/')[-1].replace('.json', '') for x in glob.glob(granger_results_directory + '/*.json')])
 
 #
 # get symbol list
 #
-symbol_list = sorted([x.split('/')[1].replace('.pickle', '') for x in glob.glob(quote_data_directory + '/*.pickle')])
+symbol_list = sorted([x.split('/')[-1].replace('.pickle', '') for x in glob.glob(quote_data_directory + '/*.pickle')])
 
 #
 # wrapper for parallelization
