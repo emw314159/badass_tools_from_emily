@@ -107,14 +107,20 @@ def compute_close_metrics(df_close, ts):
     no_percent = False
     try:
 
-        percent_high_year = 100. * max(close_series.ix[(ts + datetime.timedelta(days=-366)):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
+        percent_high_year = 100. *  close_series.ix[ts,:] / max(close_series.ix[(ts + datetime.timedelta(days=-366)):(ts + datetime.timedelta(days=-1))])
 
-        percent_high_quarter = 100. * max(close_series.ix[(ts + datetime.timedelta(days=int(round(-366./4.)))):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
+        percent_high_quarter = 100. * close_series.ix[ts,:] / max(close_series.ix[(ts + datetime.timedelta(days=int(round(-366./4.)))):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
 
-        percent_high_month = 100. * max(close_series.ix[(ts + datetime.timedelta(days=int(round(-366./12.)))):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
+        percent_high_month = 100. * close_series.ix[ts,:] / max(close_series.ix[(ts + datetime.timedelta(days=int(round(-366./12.)))):(ts + datetime.timedelta(days=-1))]) / close_series.ix[ts,:]
 
     except:
         no_percent = True
+
+
+    lag_average_dict = {}
+    lag_list = [lag_0, lag_1, lag_2, lag_3, lag_4, lag_5]
+    for i in range(2, len(lag_list) + 1):
+        lag_average_dict['lag_average_' + str(i)] = mean(lag_list[0:i])
         
     if no_percent:
         return_dict = {}
@@ -130,6 +136,9 @@ def compute_close_metrics(df_close, ts):
             'percent_high_quarter' : percent_high_quarter,
             'percent_high_month' : percent_high_month,
             }
+
+        for key in lag_average_dict.keys():
+            return_dict[key] = lag_average_dict[key]
 
     return return_dict
 
