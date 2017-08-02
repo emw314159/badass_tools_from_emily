@@ -163,7 +163,7 @@ to_save = {
     'roc_auc' : roc_auc,
     'thresholds' : thresholds,
 }
-with open(output_directory + '/fpr_tpr_thresholds.pickle', 'w') as f:
+with open(full_model_file + '_fpr_tpr_thresholds.pickle', 'w') as f:
     pickle.dump(to_save, f)
 
 

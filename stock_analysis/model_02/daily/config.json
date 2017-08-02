@@ -1,10 +1,17 @@
 {
-	"user" : "neo4j",
-	"password" : "aoeuI444",
-	"database_lags" : 2,
-	"runtime_output_directory" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/model_02/daily/output",
-	"runtime_output_directory_year" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/model_02/daily/output/year",
-	"volume_threshold" : 500000,
+    "user" : "neo4j",
+    "password" : "aoeuI444",
+    "database_lags" : 2,
+    "runtime_output_directory" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/model_02/daily/output",
+    "runtime_output_directory_year" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/model_02/daily/output/year",
+    "volume_threshold" : 500000,
     "spearmanr_lags" : -100,
-    "spearman_p_cutoff" : 0.1
+    "spearman_p_cutoff" : 0.1,
+    "model_file" : "/home/ec2-user/models/FULL_SVM",
+    "formula" : "y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday)",
+    
+    "factor_options" : {
+	"weekday" : ["M", "Tu", "W", "Th", "F"]
+    }
+
 }

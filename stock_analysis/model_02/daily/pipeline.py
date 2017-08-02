@@ -12,10 +12,12 @@ import badass_tools_from_emily.stock_analysis.model_02.daily.query_database_for_
 import badass_tools_from_emily.stock_analysis.model_02.daily.get_two_day_stocks as get_two_day_stocks
 import badass_tools_from_emily.stock_analysis.model_02.daily.get_year_stocks as get_year_stocks
 import badass_tools_from_emily.stock_analysis.model_02.daily.prepare_for_prediction as prepare_for_prediction
+import badass_tools_from_emily.stock_analysis.model_02.daily.predict as predict
 
 initialize.initialize()
 query_database_for_movers.query_database_for_movers()
 get_two_day_stocks.get_two_day_stocks()
 get_year_stocks.get_year_stocks()
 prepare_for_prediction.prepare_for_prediction()
+predict.predict()
 
