@@ -1,7 +1,7 @@
 var app = angular.module('phoenix_app', []);
 
 app.controller('phoenix_controller', ['$scope', '$http', function($scope, $http) {
-        
+
     /*
       Initialize variables
     */
