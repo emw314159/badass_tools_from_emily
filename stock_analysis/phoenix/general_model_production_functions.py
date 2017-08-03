@@ -2,7 +2,7 @@
 # import useful standard libraries
 #
 from scipy.stats import spearmanr
-from numpy import percentile, mean, isnan
+from numpy import percentile, mean, isnan, NaN
 from neo4j.v1 import GraphDatabase, basic_auth
 import datetime
 
@@ -47,19 +47,25 @@ def compute_per_volume_metric(df_volume, close_to_volume, volume, close, volume_
     volume_series_diff = [100. * (j - i) / (i + 1.) for i, j in zip(volume_series[0:-1], volume_series[1:])]
     volume_lagged = volume_series_diff
     
-    r, p = spearmanr(close_lagged, volume_lagged)
+    try:
+        r, p = spearmanr(close_lagged, volume_lagged)
+    except:
+        r, p = None, None
 
-    if isnan(r):
-        return_value = None
-    else:
-        if p > spearman_p_cutoff:
-            r = 0.
+    if r != None:
+        if isnan(r):
             return_value = None
         else:
-            try:
-                return_value = p_log_10 * r * last_diff
-            except:
+            if p > spearman_p_cutoff:
+                r = 0.
                 return_value = None
+            else:
+                try:
+                    return_value = p_log_10 * r * last_diff
+                except:
+                    return_value = None
+    else:
+        return_value = None
             
     return return_value
         

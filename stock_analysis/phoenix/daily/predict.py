@@ -36,12 +36,6 @@ def predict():
     predictions_directory = config['predictions_directory']
 
     #
-    # load thresholds
-    #
-    with open(model_file + '_fpr_tpr_thresholds.pickle') as f:
-        thresholds = pickle.load(f)
-
-    #
     # load data frame to score
     #
     predict_df = pd.read_csv(runtime_output_directory + '/to_score.csv')
