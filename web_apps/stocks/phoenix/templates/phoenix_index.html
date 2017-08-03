@@ -1,0 +1,68 @@
+<html>
+<head>
+
+  {% load static %}
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+  <script type="text/javascript" src="{% static "phoenix_index.js" %}"></script>
+  <link rel="stylesheet" href="{% static "phoenix_index.css" %}"></link>
+</head>
+<body>
+
+<div ng-app="phoenix_app">
+  <div ng-controller="phoenix_controller">
+
+    <h1>Stock Movement Predictor</h1>
+
+    <h2 class="date-text">Trading Day: {% verbatim %}{{data.date}}{% endverbatim %}</h2>
+
+    <table>
+      <tr>
+	<td>
+	  <div id="buy">
+	    <h2 class="potential-text">Potential Buys</h1>
+	    <table id="buy-table" class="potential-actions">
+	      <thead>
+		<tr>
+		  <th>Symbol</th>
+		  <th>Score</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr ng-repeat="item in data.buy">
+		  <td>{% verbatim %}{{item.symbol}}{% endverbatim %}</td>
+		  <td>{% verbatim %}{{item.score | number:3}}{% endverbatim %}</td>
+		</tr>
+	      </tbody>
+	    </table>
+	  </div>
+	</td>
+	
+	<td>
+	  <div id="short">
+	    <h2 class="potential-text">Potential Shorts</h1>
+	    <table id="short-table" class="potential-actions">
+	      <thead>
+		<tr>
+		  <th>Symbol</th>
+		  <th>Score</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr ng-repeat="item in data.short">
+		  <td>{% verbatim %}{{item.symbol}}{% endverbatim %}</td>
+		  <td>{% verbatim %}{{item.score | number:3}}{% endverbatim %}</td>
+		</tr>
+	      </tbody>
+	    </table>
+	  </div>
+	</td>
+
+      </tr>
+      </table>
+
+
+  </div>
+</div>
+
+</body>
+</html>

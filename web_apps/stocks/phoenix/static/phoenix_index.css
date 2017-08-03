@@ -1,0 +1,32 @@
+
+.date-text {
+    color : blue;
+}
+
+.potential-actions {
+    border-collapse : collapse;
+    margin-left : auto;
+    margin-right : auto;
+}
+
+.potential-actions table, .potential-actions th, .potential-actions td {
+    border : 1px solid black;
+}
+
+.potential-text {
+    text-align : center;
+}
+
+th, td {
+    text-align : center;
+    padding-left : 15px;
+    padding-right : 15px;
+}
+
+.potential-actions th {
+    background-color : lightgrey;
+}
+
+.potential-actions td {
+    background-color : pink;
+}
