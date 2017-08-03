@@ -3,6 +3,10 @@
     color : blue;
 }
 
+.obnoxious-text {
+    color : purple;
+}
+
 .potential-actions {
     border-collapse : collapse;
     margin-left : auto;

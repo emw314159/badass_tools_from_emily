@@ -12,6 +12,7 @@ import pandas as pd
 import pickle
 import datetime
 from numpy import arange
+import json
 
 #
 # weekday map
@@ -168,6 +169,13 @@ def model_report(request):
         short = pickle.load(f)
 
     #
+    # load model version
+    #
+    with open('/home/ec2-user/models/phoenix/version.json') as f:
+        version = json.load(f)
+    
+
+    #
     # calculate major ROC positions
     #
     buy_ROC = get_major_ROC_points(buy)
@@ -179,6 +187,7 @@ def model_report(request):
     data = {
         'buy_ROC' : buy_ROC,
         'short_ROC' : short_ROC,
+        'version' : version,
     }
 
     return JsonResponse({'data' : data})
