@@ -28,7 +28,16 @@ def initialize():
     #
     # establish yesterday's date
     #
-    end = (datetime.datetime.now() + datetime.timedelta(days=-1)).date()
+    now = datetime.datetime.now()
+
+    if now.weekday() == 0:
+        dt = -3
+    elif now.weekday() == 6:
+        dt = -2
+    else:
+        dt = -1
+
+    end = (now + datetime.timedelta(days=dt)).date()
     with open(runtime_output_directory + '/end.pickle', 'w') as f:
         pickle.dump(end, f)
 

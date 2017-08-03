@@ -37,6 +37,7 @@ def predict():
     formula = config['formula']
     factor_options = config['factor_options']
     predictions_directory = config['predictions_directory']
+    model_file_directory = config['model_file_directory']
 
     #
     # load data frame to score
@@ -59,14 +60,32 @@ def predict():
     with open(short_model_file + '.pickle') as f:
         short_model = pickle.load(f)
 
+
     #
-    # predict and save
+    # load model version
+    #
+    with open(model_file_directory + '/version.json') as f:
+        version = json.load(f)['version']
+
+    #
+    # predict
     #
     prediction = buy_model.predict(X)
     predict_df['prediction_buy'] = prediction
     prediction = short_model.predict(X)
     predict_df['prediction_short'] = prediction
+
+    #
+    # add version
+    #
+    predict_df['model_version'] = version
+
+    #
+    # save
+    #
     predict_df.to_csv(runtime_output_directory + '/predictions.csv', index=False)
+
+
 
     #
     # load end date and save date stamped version
