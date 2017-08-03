@@ -8,17 +8,19 @@ sys.path.insert(0, '/home/ec2-user')
 #
 import pprint as pp
 import pandas as pd
-from numpy import percentile, isnan, sign
+from numpy import percentile, isnan
 import sys
 import random
 import json
 import pickle
+import datetime
 
 #
 # load my libraries
 #
 import badass_tools_from_emily.machine_learning.machine_learning as ml
 import badass_tools_from_emily.machine_learning.random_forest as rf
+import badass_tools_from_emily.stock_analysis.phoenix.general_model_production_functions as sa
 
 #
 # load configuration
@@ -58,6 +60,14 @@ model_file_directory = config['model_file_directory']
 compute_rf = False
 
 #
+# time stamp the version and save
+#
+print "Saving time stamp..."
+version = str(datetime.datetime.now())
+with open(model_file_directory + '/version.json', 'w') as f:
+    json.dump({'version' : version}, f)
+
+#
 # load data
 #
 print 'Loading data...'
@@ -86,23 +96,8 @@ df = df.ix[idx_list,:].copy()
 #
 # add some features
 #
-def add_signed_squared(df, column, formula):
-    df[column + '_signed_squared'] = [sign(x) * x**2. for x in df[column]]
-    formula += ' + ' + column + '_signed_squared'
-    return formula
-
 print 'Adding signed squared features...'
-formula = add_signed_squared(df, 'percent_high_year', formula)
-formula = add_signed_squared(df, 'percent_high_month', formula)
-formula = add_signed_squared(df, 'percent_high_quarter', formula)
-formula = add_signed_squared(df, 'lag_0', formula)
-formula = add_signed_squared(df, 'lag_1', formula)
-formula = add_signed_squared(df, 'p_0', formula)
-formula = add_signed_squared(df, 'p_50', formula)
-formula = add_signed_squared(df, 'p_100', formula)
-formula = add_signed_squared(df, 'mean_median_diff', formula)
-formula = add_signed_squared(df, 'lag_average_2', formula)
-formula = add_signed_squared(df, 'len_features_list', formula)
+formula = sa.add_features(df, formula)
 
 #
 # save formula

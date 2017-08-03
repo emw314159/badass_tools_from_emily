@@ -19,6 +19,8 @@ def predict():
     # import my libraries
     #
     import badass_tools_from_emily.machine_learning.machine_learning as ml
+    import badass_tools_from_emily.stock_analysis.phoenix.general_model_production_functions as sa
+
 
     #
     # load configuration
@@ -43,6 +45,11 @@ def predict():
     predict_df['y'] = 1
 
     #
+    # add extra features
+    #
+    formula = sa.add_features(predict_df, formula)
+
+    #
     # prepare to run prediction
     #
     y, X = ml.categorize(formula, factor_options, predict_df)
@@ -62,11 +69,19 @@ def predict():
     predict_df.to_csv(runtime_output_directory + '/predictions.csv', index=False)
 
     #
+    # load end date and save date stamped version
+    #
+    with open(runtime_output_directory + '/end.pickle') as f:
+        end = pickle.load(f)
+    predict_df.to_csv(runtime_output_directory + '/predictions_' + str(end) + '.csv', index=False)
+
+    #
     # copy to predictions directory
     #
     os.system('rm -R ' + predictions_directory)
     os.system('mkdir ' + predictions_directory)
     os.system('cp ' + runtime_output_directory + '/predictions.csv ' + predictions_directory)
+    os.system('cp ' + runtime_output_directory + '/predictions_' + str(end) + '.csv ' + predictions_directory)
     os.system('cp ' + runtime_output_directory + '/end.pickle ' + predictions_directory)
 
 

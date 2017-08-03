@@ -2,7 +2,7 @@
 # import useful standard libraries
 #
 from scipy.stats import spearmanr
-from numpy import percentile, mean, isnan, NaN
+from numpy import percentile, mean, isnan, NaN, sign
 from neo4j.v1 import GraphDatabase, basic_auth
 import datetime
 
@@ -185,3 +185,28 @@ def get_current_volume(df_volume, ts, spearmanr_lags, database_lags):
         volume_series_partial = None
 
     return volume_series, volume_series_diff, last_diff, volume_series_partial
+
+#
+# add signed squared features
+#
+def add_signed_squared(df, column, formula):
+    df[column + '_signed_squared'] = [sign(x) * x**2. for x in df[column]]
+    formula += ' + ' + column + '_signed_squared'
+    return formula
+
+#
+# add extra features
+#
+def add_features(df, formula):
+    formula = add_signed_squared(df, 'percent_high_year', formula)
+    formula = add_signed_squared(df, 'percent_high_month', formula)
+    formula = add_signed_squared(df, 'percent_high_quarter', formula)
+    formula = add_signed_squared(df, 'lag_0', formula)
+    formula = add_signed_squared(df, 'lag_1', formula)
+    formula = add_signed_squared(df, 'p_0', formula)
+    formula = add_signed_squared(df, 'p_50', formula)
+    formula = add_signed_squared(df, 'p_100', formula)
+    formula = add_signed_squared(df, 'mean_median_diff', formula)
+    formula = add_signed_squared(df, 'lag_average_2', formula)
+    formula = add_signed_squared(df, 'len_features_list', formula)
+    return formula
