@@ -8,7 +8,7 @@ sys.path.insert(0, '/home/ec2-user')
 #
 import pprint as pp
 import pandas as pd
-from numpy import percentile, isnan, NaN
+from numpy import percentile, isnan, sign
 import sys
 import random
 import json
@@ -53,8 +53,9 @@ libsvm_root = config['libsvm_root']
 formula = config['formula']
 factor_options = config['factor_options']
 gnuplot_directory = config['gnuplot_directory']
+model_file_directory = config['model_file_directory']
 
-compute_rf = True
+compute_rf = False
 
 #
 # load data
@@ -81,6 +82,33 @@ for i, idx in enumerate(df.index):
         idx_list.append(idx)
 
 df = df.ix[idx_list,:].copy()
+
+#
+# add some features
+#
+def add_signed_squared(df, column, formula):
+    df[column + '_signed_squared'] = [sign(x) * x**2. for x in df[column]]
+    formula += ' + ' + column + '_signed_squared'
+    return formula
+
+print 'Adding signed squared features...'
+formula = add_signed_squared(df, 'percent_high_year', formula)
+formula = add_signed_squared(df, 'percent_high_month', formula)
+formula = add_signed_squared(df, 'percent_high_quarter', formula)
+formula = add_signed_squared(df, 'lag_0', formula)
+formula = add_signed_squared(df, 'lag_1', formula)
+formula = add_signed_squared(df, 'p_0', formula)
+formula = add_signed_squared(df, 'p_50', formula)
+formula = add_signed_squared(df, 'p_100', formula)
+formula = add_signed_squared(df, 'mean_median_diff', formula)
+formula = add_signed_squared(df, 'lag_average_2', formula)
+formula = add_signed_squared(df, 'len_features_list', formula)
+
+#
+# save formula
+#
+with open(model_file_directory + '/formula.json', 'w') as f:
+    json.dump({'formula' : formula}, f)
 
 #
 # decide on percentiles
@@ -142,6 +170,7 @@ def generalized(df_to_use, status, full_model_file, cost, gamma, formula, factor
     # figure out which features matter the most using random forest classification
     #
     if compute_rf:
+        print 'Computing random forest...'
         yrf, Xrf = ml.categorize(formula, factor_options, df_to_use, add_intercept=False)
         model = ml.random_forest_classification_wrapper(yrf, Xrf, n_jobs=number_of_random_forest_jobs)
         feature_importances = model.model.feature_importances_

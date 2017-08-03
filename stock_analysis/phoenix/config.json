@@ -12,10 +12,12 @@
   
     "buy_cost" : 2.0,
     "buy_gamma" : 0.5,
-    "buy_model_file" : "/home/ec2-user/models/FULL_SVM_BUY",
+    "buy_model_file" : "/home/ec2-user/models/phoenix/FULL_SVM_BUY",
     "short_cost" : 2.0,
     "short_gamma" : 0.5,
-    "short_model_file" : "/home/ec2-user/models/FULL_SVM_SHORT",
+    "short_model_file" : "/home/ec2-user/models/phoenix/FULL_SVM_SHORT",
+
+    "model_file_directory" : "/home/ec2-user/models/phoenix",
 
     "gnuplot_directory" : "/usr/bin/gnuplot",
 
