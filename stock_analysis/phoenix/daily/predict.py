@@ -67,8 +67,8 @@ def predict():
     #
     os.system('rm -R ' + predictions_directory)
     os.system('mkdir ' + predictions_directory)
-    os.system('cp ' + runtime_output_directory + '/predictions.csv ' predictions_directory)
-    os.system('cp ' + runtime_output_directory + '/end.pickle ' predictions_directory)
+    os.system('cp ' + runtime_output_directory + '/predictions.csv ' + predictions_directory)
+    os.system('cp ' + runtime_output_directory + '/end.pickle ' + predictions_directory)
 
 
 if __name__ == '__main__':
