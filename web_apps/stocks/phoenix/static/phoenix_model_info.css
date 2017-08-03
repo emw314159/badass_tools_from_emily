@@ -1,0 +1,26 @@
+
+.model-text {
+    color : blue;
+}
+
+th, td {
+    text-align : center;
+    padding-left : 15px;
+    padding-right : 15px;
+}
+
+.key-roc-points {
+    border-collapse : collapse;
+}
+
+.key-roc-points table, .key-roc-points th, .key-roc-points td {
+    border : 1px solid black;
+}
+
+.key-roc-points th {
+    background-color : lightgrey;
+}
+
+.key-roc-points td {
+    background-color : lightblue;
+}
