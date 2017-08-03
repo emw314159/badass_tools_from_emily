@@ -1,0 +1,29 @@
+<html>
+<head>
+
+  {% load static %}
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+  <script type="text/javascript" src="{% static "phoenix_index.js" %}"></script>
+  <link rel="stylesheet" href="{% static "phoenix_index.css" %}"></link>
+</head>
+<body>
+
+<h1>Model Training Information</h1>
+
+<h2>"Buy" Model</h2>
+
+<h4>Relative Feature Importances</h4>
+<img src="{% static "buy_feature_importances.png" %}"/>
+
+<h4>ROC Curve</h4>
+<img src="{% static "buy_ROC.png" %}"/>
+
+<h4>AUC Histogram</h4>
+<img src="{% static "buy_HIST_AUC.png" %}"/>
+
+<h4>SVM Grid Search</h4>
+<img src="{% static "buy_grid.png" %}"/>
+
+</body>
+</html>
+

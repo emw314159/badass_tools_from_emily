@@ -31,6 +31,13 @@ def index(request):
     template = loader.get_template('phoenix_index.html')
     return HttpResponse(template.render({}, request))
 
+#
+# index
+#
+def info(request):
+    template = loader.get_template('phoenix_model_info.html')
+    return HttpResponse(template.render({}, request))
+
 
 #
 # get and sort given prediction
