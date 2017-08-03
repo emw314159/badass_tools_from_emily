@@ -13,6 +13,7 @@ def predict():
     import pandas as pd
     import sys
     import json
+    import os
 
     #
     # import my libraries
@@ -32,6 +33,7 @@ def predict():
     buy_model_file = config['buy_model_file']
     formula = config['formula']
     factor_options = config['factor_options']
+    predictions_directory = config['predictions_directory']
 
     #
     # load thresholds
@@ -60,7 +62,13 @@ def predict():
     predict_df['prediction_buy'] = prediction
     predict_df.to_csv(runtime_output_directory + '/predictions.csv', index=False)
 
-
+    #
+    # copy to predictions directory
+    #
+    os.system('rm -R ' + predictions_directory)
+    os.system('mkdir ' + predictions_directory)
+    os.system('cp ' + runtime_output_directory + '/predictions.csv ' predictions_directory)
+    os.system('cp ' + runtime_output_directory + '/end.pickle ' predictions_directory)
 
 
 if __name__ == '__main__':
