@@ -32,16 +32,24 @@ with open(sys.argv[1]) as f:
 random.seed(config['random_seed'])
 output_directory = config['output_directory']
 plot_directory = config['images_directory']
+
 buy_bad_cutoff_percentile = config['buy_bad_cutoff_percentile']
 buy_good_cutoff_percentile = config['buy_good_cutoff_percentile']
+buy_cost = config['buy_cost']
+buy_gamma = config['buy_gamma']
+buy_full_model_file = config['buy_model_file']
+
+short_bad_cutoff_percentile = config['short_bad_cutoff_percentile']
+short_good_cutoff_percentile = config['short_good_cutoff_percentile']
+short_cost = config['short_cost']
+short_gamma = config['short_gamma']
+short_full_model_file = config['short_model_file']
+
 number_of_vfolds_to_run = config['number_of_vfolds_to_run']
 number_of_random_forest_jobs = config['number_of_random_forest_jobs']
 file_to_load = config['data_for_modeling_file']
 lead_variable = config['lead_variable']
-full_model_file = config['buy_model_file']
 libsvm_root = config['libsvm_root']
-cost = config['cost']
-gamma = config['gamma']
 formula = config['formula']
 factor_options = config['factor_options']
 gnuplot_directory = config['gnuplot_directory']
@@ -83,13 +91,17 @@ print percentile(df[lead_variable], [buy_bad_cutoff_percentile, buy_good_cutoff_
 buy_bad_cutoff = percentile(df[lead_variable], buy_bad_cutoff_percentile)
 buy_good_cutoff = percentile(df[lead_variable], buy_good_cutoff_percentile)
 print
+print len(df.index)
+print percentile(df[lead_variable], [short_bad_cutoff_percentile, short_good_cutoff_percentile])
+short_bad_cutoff = percentile(df[lead_variable], short_bad_cutoff_percentile)
+short_good_cutoff = percentile(df[lead_variable], short_good_cutoff_percentile)
 
 #
 # apply cutoffs given computed percentiles
 #
-df_to_use = df.ix[(df[lead_variable] <= buy_bad_cutoff) | (df[lead_variable] >= buy_good_cutoff), :].copy()
+df_to_use_buy = df.ix[(df[lead_variable] <= buy_bad_cutoff) | (df[lead_variable] >= buy_good_cutoff), :].copy()
 y = []
-for x in df_to_use[lead_variable]:
+for x in df_to_use_buy[lead_variable]:
     if x <= buy_bad_cutoff:
         y.append(0.)
     elif x >= buy_good_cutoff:
@@ -99,75 +111,103 @@ for x in df_to_use[lead_variable]:
         print 'Something went wrong.'
         print
         sys.exit(0)
-df_to_use['y'] = y
+df_to_use_buy['y'] = y
 
-#
-# set up model
-#
-y, X = ml.categorize(formula, factor_options, df_to_use, add_intercept=False)
-
-#
-# figure out which features matter the most using random forest classification
-#
-if compute_rf:
-    yrf, Xrf = ml.categorize(formula, factor_options, df_to_use, add_intercept=False)
-    model = ml.random_forest_classification_wrapper(yrf, Xrf, n_jobs=number_of_random_forest_jobs)
-    feature_importances = model.model.feature_importances_
-    fi_dict = {}
-    for h, fi in zip(list(Xrf.columns.values), feature_importances):
-        fi_dict[h] = fi
-    rf.plot_feature_importances(fi_dict, 'Relative Feature Importances', plot_directory + '/buy_feature_importances.png')
+df_to_use_short = df.ix[(df[lead_variable] >= short_bad_cutoff) | (df[lead_variable] <= short_good_cutoff), :].copy()
+y = []
+for x in df_to_use_short[lead_variable]:
+    if x >= short_bad_cutoff:
+        y.append(0.)
+    elif x <= short_good_cutoff:
+        y.append(1.)
+    else:
+        print
+        print 'Something went wrong.'
+        print
+        sys.exit(0)
+df_to_use_short['y'] = y
 
 
 #
-# get the full SVM model
+# general case
 #
-model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsvm_root=libsvm_root)
-with open(full_model_file + '.pickle', 'w') as f:
-    pickle.dump(model, f)
+def generalized(df_to_use, status, full_model_file, cost, gamma, formula, factor_options, compute_rf, number_of_vfolds_to_run, number_of_random_forest_jobs):
 
-#
-# cross-validate
-#
-results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV', libsvm_root=libsvm_root)
+    #
+    # set up model
+    #
+    y, X = ml.categorize(formula, factor_options, df_to_use, add_intercept=False)
 
-
-
-print
-pp.pprint(results['auc_list'])
-print
-
-#
-# plot histogram and ROC plots for the cross-validation effort
-#
-ml.plot_auc_histogram(results, 'Cross-Validation AUC Histogram (n = ' + str(number_of_vfolds_to_run) + ')', plot_directory + '/buy_HIST_AUC.png', color='lightblue')
-
-fpr, tpr, roc_auc, thresholds = ml.plot_a_representative_ROC_plot(results, 'ROC Curve for Stock Prediction', plot_directory + '/buy_ROC.png')
-
-#
-# save fpr, tpr, roc_auc, thresholds
-#
-to_save = {
-    'fpr' : fpr,
-    'tpr' : tpr,
-    'roc_auc' : roc_auc,
-    'thresholds' : thresholds,
-}
-with open(full_model_file + '_fpr_tpr_thresholds.pickle', 'w') as f:
-    pickle.dump(to_save, f)
+    #
+    # figure out which features matter the most using random forest classification
+    #
+    if compute_rf:
+        yrf, Xrf = ml.categorize(formula, factor_options, df_to_use, add_intercept=False)
+        model = ml.random_forest_classification_wrapper(yrf, Xrf, n_jobs=number_of_random_forest_jobs)
+        feature_importances = model.model.feature_importances_
+        fi_dict = {}
+        for h, fi in zip(list(Xrf.columns.values), feature_importances):
+            fi_dict[h] = fi
+        rf.plot_feature_importances(fi_dict, 'Relative Feature Importances', plot_directory + '/' + status + '_feature_importances.png')
 
 
-#
-# figure out where 80% TPR is
-#
-for i, r in enumerate(tpr):
-    if r >= 0.8:
-        break
-print
-print 'False positive rate at 80% true positive rate: ' + str(fpr[i])
-print 'AUC = ' + str(roc_auc)
-print
+    #
+    # get the full SVM model
+    #
+    model = ml.svm_wrapper(y, X, c=cost, g=gamma, output_file=full_model_file, libsvm_root=libsvm_root)
+    with open(full_model_file + '.pickle', 'w') as f:
+        pickle.dump(model, f)
 
-print 'python ' + libsvm_root + '/tools/grid.py -svmtrain ' + libsvm_root + '/svm-train -gnuplot ' + gnuplot_directory + ' -png ' + plot_directory + '/buy_grid.png -b 1 ' + full_model_file + '.scaled'
-print
+    #
+    # cross-validate
+    #
+    results = ml.v_fold(ml.svm_wrapper, y, X, number_of_vfolds_to_run, c=cost, g=gamma, output_file='output/SVM_CV', libsvm_root=libsvm_root)
+
+    print
+    pp.pprint(results['auc_list'])
+    print
+
+    #
+    # plot histogram and ROC plots for the cross-validation effort
+    #
+    ml.plot_auc_histogram(results, 'Cross-Validation AUC Histogram (n = ' + str(number_of_vfolds_to_run) + ')', plot_directory + '/' + status + '_HIST_AUC.png', color='lightblue')
+
+    fpr, tpr, roc_auc, thresholds = ml.plot_a_representative_ROC_plot(results, 'ROC Curve for Stock Prediction', plot_directory + '/' + status + '_ROC.png')
+
+    #
+    # save fpr, tpr, roc_auc, thresholds
+    #
+    to_save = {
+        'fpr' : fpr,
+        'tpr' : tpr,
+        'roc_auc' : roc_auc,
+        'thresholds' : thresholds,
+    }
+    with open(full_model_file + '_fpr_tpr_thresholds.pickle', 'w') as f:
+        pickle.dump(to_save, f)
+
+
+    #
+    # figure out where 80% TPR is
+    #
+    for i, r in enumerate(tpr):
+        if r >= 0.8:
+            break
+    print
+    print 'False positive rate at 80% true positive rate: ' + str(fpr[i])
+    print 'AUC = ' + str(roc_auc)
+    print
+
+
+generalized(df_to_use_buy, 'buy', buy_full_model_file, buy_cost, buy_gamma, formula, factor_options, compute_rf, number_of_vfolds_to_run, number_of_random_forest_jobs)
+
+generalized(df_to_use_short, 'short', short_full_model_file, short_cost, short_gamma, formula, factor_options, compute_rf, number_of_vfolds_to_run, number_of_random_forest_jobs)
+
+
+f = open(output_directory + '/grid_commands.txt', 'w')
+f.write('\n')
+f.write('python ' + libsvm_root + '/tools/grid.py -svmtrain ' + libsvm_root + '/svm-train -gnuplot ' + gnuplot_directory + ' -png ' + plot_directory + '/buy_grid.png -b 1 ' + buy_full_model_file + '.scaled' + '\n')
+f.write('\n')
+f.write('python ' + libsvm_root + '/tools/grid.py -svmtrain ' + libsvm_root + '/svm-train -gnuplot ' + gnuplot_directory + ' -png ' + plot_directory + '/short_grid.png -b 1 ' + short_full_model_file + '.scaled' + '\n')
+f.write('\n')
 

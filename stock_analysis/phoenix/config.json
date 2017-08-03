@@ -1,17 +1,21 @@
 {
     "buy_bad_cutoff_percentile" : 40.0,
     "buy_good_cutoff_percentile" : 95.0,
-    "number_of_vfolds_to_run" : 5,
+    "short_bad_cutoff_percentile" : 60.0,
+    "short_good_cutoff_percentile" : 5.0,
+
+    "number_of_vfolds_to_run" : 2,
     "number_of_random_forest_jobs" : 2000,
     "data_for_modeling_file" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/phoenix/output/data_for_modeling.csv",
     "lead_variable" : "percent_diff_lead_1_to_lead_2",
     "libsvm_root" : "/home/ec2-user/packages/libsvm-3.22",
+  
     "buy_cost" : 2.0,
     "buy_gamma" : 0.5,
     "buy_model_file" : "/home/ec2-user/models/FULL_SVM_BUY",
     "short_cost" : 2.0,
     "short_gamma" : 0.5,
-    "short_model_file" : "/home/ec2-user/models/FULL_SVM_BUY",
+    "short_model_file" : "/home/ec2-user/models/FULL_SVM_SHORT",
 
     "gnuplot_directory" : "/usr/bin/gnuplot",
 
