@@ -93,7 +93,10 @@ def report(request):
     #
     # compute trading day
     #
-    trading_day = end + datetime.timedelta(days=1)
+    if not end.weekday() in [5, 6]:
+        trading_day = end + datetime.timedelta(days=1)
+    else:
+        trading_day = end + datetime.timedelta(days=3)
     weekday = weekday_map[trading_day.weekday()]
     data['date'] = weekday + ', ' + str(trading_day)
 

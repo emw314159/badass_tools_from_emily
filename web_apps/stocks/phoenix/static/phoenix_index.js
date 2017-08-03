@@ -6,6 +6,7 @@ app.controller('phoenix_controller', ['$scope', '$http', function($scope, $http)
       Initialize variables
     */
     $scope.data = [];
+    $scope.have_data = false;
     var url = 'http://ec2-35-160-25-103.us-west-2.compute.amazonaws.com:8080/phoenix/report'
 
     /*
@@ -17,6 +18,7 @@ app.controller('phoenix_controller', ['$scope', '$http', function($scope, $http)
         url : url,
     }).then(function successCallback(response) {
 	$scope.data = response['data']['data'];
+	$scope.have_data = true;
     }, function errorCallback(response) {
     });
 }]);

@@ -17,55 +17,60 @@
 
     <p>View the model production details <a href="information">here</a>.</p>
 
+
+<div ng-hide="have_data">
+  <img src="{% static "spinner.gif" %}"></link>
+</div>
+
+    <div ng-show="have_data">
     <h2 class="date-text">Trading Day: {% verbatim %}{{data.date}}{% endverbatim %}</h2>
+      <table>
+	<tr>
+	  <td>
+	    <div id="buy">
+	      <h2 class="potential-text">Potential Buys</h1>
+<table id="buy-table" class="potential-actions">
+  <thead>
+    <tr>
+      <th>Symbol</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="item in data.buy">
+      <td>{% verbatim %}{{item.symbol}}{% endverbatim %}</td>
+      <td>{% verbatim %}{{item.score | number:3}}{% endverbatim %}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</td>
 
-    <table>
-      <tr>
-	<td>
-	  <div id="buy">
-	    <h2 class="potential-text">Potential Buys</h1>
-	    <table id="buy-table" class="potential-actions">
-	      <thead>
-		<tr>
-		  <th>Symbol</th>
-		  <th>Score</th>
-		</tr>
-	      </thead>
-	      <tbody>
-		<tr ng-repeat="item in data.buy">
-		  <td>{% verbatim %}{{item.symbol}}{% endverbatim %}</td>
-		  <td>{% verbatim %}{{item.score | number:3}}{% endverbatim %}</td>
-		</tr>
-	      </tbody>
-	    </table>
-	  </div>
-	</td>
-	
-	<td>
-	  <div id="short">
-	    <h2 class="potential-text">Potential Shorts</h1>
-	    <table id="short-table" class="potential-actions">
-	      <thead>
-		<tr>
-		  <th>Symbol</th>
-		  <th>Score</th>
-		</tr>
-	      </thead>
-	      <tbody>
-		<tr ng-repeat="item in data.short">
-		  <td>{% verbatim %}{{item.symbol}}{% endverbatim %}</td>
-		  <td>{% verbatim %}{{item.score | number:3}}{% endverbatim %}</td>
-		</tr>
-	      </tbody>
-	    </table>
-	  </div>
-	</td>
+<td>
+  <div id="short">
+    <h2 class="potential-text">Potential Shorts</h1>
+<table id="short-table" class="potential-actions">
+  <thead>
+    <tr>
+      <th>Symbol</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="item in data.short">
+      <td>{% verbatim %}{{item.symbol}}{% endverbatim %}</td>
+      <td>{% verbatim %}{{item.score | number:3}}{% endverbatim %}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</td>
 
-      </tr>
-      </table>
+</tr>
+</table>
+</div>
 
-
-  </div>
+</div>
 </div>
 
 </body>

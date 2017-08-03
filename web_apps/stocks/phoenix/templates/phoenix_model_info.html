@@ -20,11 +20,22 @@
       
       <h2 class="model-text">Version</h2>
 
-      <p>{% verbatim %}{{data.version.version}}{% endverbatim %}</p>
+      <div ng-hide="have_data">
+	<img src="{% static "spinner.gif" %}"></link>
+      </div>
+      <div ng-show="have_data">
+	<p>{% verbatim %}{{data.version.version}}{% endverbatim %}</p>
+      </div>
 
       <h2 class="model-text">"Buy" Model</h2>
 
       <h4>Key ROC Points</h4>
+
+      <div ng-hide="have_data">
+	<img src="{% static "spinner.gif" %}"></link>
+      </div>
+      <div ng-show="have_data">
+
       <table class="key-roc-points">
 	<tr><th>Threshold</th><th>True Positive Rate</th><th>False Positive Rate</th></tr>
 	<tr ng-repeat="item in data.buy_ROC">
@@ -33,6 +44,8 @@
 	  <td>{% verbatim %}{{item.fpr | number:3}}{% endverbatim %}</td>
 	</tr>
       </table>
+
+      </div>
       
       <h4>Relative Feature Importances</h4>
       <img src="{% static "buy_feature_importances.png" %}"/>
@@ -49,6 +62,12 @@
       <h2 class="model-text">"Short" Model</h2>
 
       <h4>Key ROC Points</h4>
+
+      <div ng-hide="have_data">
+	<img src="{% static "spinner.gif" %}"></link>
+      </div>
+      <div ng-show="have_data">
+
       <table class="key-roc-points">
 	<tr><th>Threshold</th><th>True Positive Rate</th><th>False Positive Rate</th></tr>
 	<tr ng-repeat="item in data.short_ROC">
@@ -57,6 +76,7 @@
 	  <td>{% verbatim %}{{item.fpr | number:3}}{% endverbatim %}</td>
 	</tr>
       </table>
+      </div>
       
       <h4>Relative Feature Importances</h4>
       <img src="{% static "short_feature_importances.png" %}"/>
