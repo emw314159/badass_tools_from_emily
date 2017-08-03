@@ -19,4 +19,5 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^volume-movers/', include('volume_movers.urls')),
+    url(r'^phoenix/', include('phoenix.urls')),
 ]

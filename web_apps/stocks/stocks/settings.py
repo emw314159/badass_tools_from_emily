@@ -26,7 +26,7 @@ SECRET_KEY = '7w)w#)9w)@n2mshzti1@gbxsenh^^meh*69_lubb9zd1tv4%-4'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'ec2-34-213-112-250.us-west-2.compute.amazonaws.com'
+    'ec2-35-160-25-103.us-west-2.compute.amazonaws.com',
 ]
 
 
@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'volume_movers.apps.VolumeMoversConfig',
+    'phoenix.apps.PhoenixConfig',
 
     'django.contrib.admin',
     'django.contrib.auth',
