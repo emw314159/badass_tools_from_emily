@@ -31,6 +31,7 @@ def predict():
     #
     runtime_output_directory = config['runtime_output_directory']
     buy_model_file = config['buy_model_file']
+    short_model_file = config['short_model_file']
     formula = config['formula']
     factor_options = config['factor_options']
     predictions_directory = config['predictions_directory']
@@ -48,12 +49,16 @@ def predict():
 
     with open(buy_model_file + '.pickle') as f:
         buy_model = pickle.load(f)
+    with open(short_model_file + '.pickle') as f:
+        short_model = pickle.load(f)
 
     #
     # predict and save
     #
     prediction = buy_model.predict(X)
     predict_df['prediction_buy'] = prediction
+    prediction = short_model.predict(X)
+    predict_df['prediction_short'] = prediction
     predict_df.to_csv(runtime_output_directory + '/predictions.csv', index=False)
 
     #
