@@ -6,8 +6,13 @@
     "data_for_modeling_file" : "/home/ec2-user/badass_tools_from_emily/stock_analysis/phoenix/output/data_for_modeling.csv",
     "lead_variable" : "percent_diff_lead_1_to_lead_2",
     "libsvm_root" : "/home/ec2-user/packages/libsvm-3.22",
-    "cost" : 2.0,
-    "gamma" : 0.5,
+    "buy_cost" : 2.0,
+    "buy_gamma" : 0.5,
+    "buy_model_file" : "/home/ec2-user/models/FULL_SVM_BUY",
+    "short_cost" : 2.0,
+    "short_gamma" : 0.5,
+    "short_model_file" : "/home/ec2-user/models/FULL_SVM_BUY",
+
     "gnuplot_directory" : "/usr/bin/gnuplot",
 
     "random_seed" : 234,
@@ -23,7 +28,6 @@
     "volume_threshold" : 500000,
     "spearmanr_lags" : -100,
     "spearman_p_cutoff" : 0.1,
-    "buy_model_file" : "/home/ec2-user/models/FULL_SVM_BUY",
     "formula" : "y ~ lag_0 + lag_1 + lag_2 + lag_3 + lag_4 + lag_5 + len_features_list + mean_median_diff + p_0 + p_100 + p_25 + p_50 + p_75 + percent_high_month + percent_high_quarter + percent_high_year + C(weekday) + lag_average_2 + lag_average_3 + lag_average_4 + lag_average_5 + lag_average_6",
     
     "factor_options" : {
