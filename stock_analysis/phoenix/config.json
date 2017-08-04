@@ -13,8 +13,8 @@
     "buy_cost" : 128.0,
     "buy_gamma" : 0.5,
     "buy_model_file" : "/home/ec2-user/models/phoenix/FULL_SVM_BUY",
-    "short_cost" : 2.0,
-    "short_gamma" : 0.5,
+    "short_cost" : 32768.0,
+    "short_gamma" : 0.03125,
     "short_model_file" : "/home/ec2-user/models/phoenix/FULL_SVM_SHORT",
 
     "model_file_directory" : "/home/ec2-user/models/phoenix",
