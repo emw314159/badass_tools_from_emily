@@ -13,7 +13,7 @@
 
     <h1>Badass Stock Movement Predictor</h1>
 
-    <h4 class="obnoxious-text">Causal networks! Machine learning! What more can a girl want?</h4>
+    <h4 class="obnoxious-text">Causal networks! Machine learning! What more could a girl want?</h4>
 
     <p>View the model production details <a href="information">here</a>.</p>
 
@@ -23,7 +23,8 @@
 </div>
 
     <div ng-show="have_data">
-    <h2 class="date-text">Trading Day: {% verbatim %}{{data.date}}{% endverbatim %}</h2>
+    <h2 class="date-text">Last Close Date: {% verbatim %}{{data.end_date}}{% endverbatim %}</h2>
+    <h2 class="date-text">Trading Date: {% verbatim %}{{data.trading_date}}{% endverbatim %}</h2>
       <table>
 	<tr>
 	  <td>

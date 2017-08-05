@@ -93,13 +93,15 @@ def report(request):
     #
     # compute trading day
     #
-    if not end.weekday() in [5, 6]:
-        trading_day = end + datetime.timedelta(days=1)
-    else:
+    if end.weekday() == 4:
         trading_day = end + datetime.timedelta(days=3)
+    elif end.weekday() == 5:
+        trading_day = end + datetime.timedelta(days=2)
+    else:
+        trading_day = end + datetime.timedelta(days=1)
     weekday = weekday_map[trading_day.weekday()]
-    data['date'] = weekday + ', ' + str(trading_day)
-
+    data['trading_date'] = weekday + ', ' + str(trading_day)
+    data['end_date'] = weekday_map[end.weekday()] + ', ' + str(end)
     return JsonResponse({'data' : data})
 
 
