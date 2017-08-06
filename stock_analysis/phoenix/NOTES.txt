@@ -1,0 +1,27 @@
+
+
+
+Ideas on how to improve the model:
+
+      Add "is_october" at minimum, and perhaps other months or groups of months.
+
+      Add accumulation/distribution line.
+
+      Add relative strength index.
+
+      Did I do anything with volume trend in the "close" stock?
+
+      Add candlestick features, e.g.,
+          - % change between open and close
+	  - % change between high and low
+	  - bullish or bearish candlestick
+	  - degree of bullishness or bearishness (maybe this is % change between open and close)
+	  - patterns observed in the harmonic trading book
+	  - differences between low and close and high and close
+	  - differences between low and open and high and open
+
+	  - several of these might come to the same thing...
+
+
+
+
