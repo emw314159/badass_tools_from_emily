@@ -25,7 +25,7 @@
     "images_directory" : "/home/ec2-user/images",
     "output_directory" : "output",
     "data_directory" : "/home/ec2-user/data",
-    "predictions_directory" : "/home/ec2-user/predictions/phoenix",
+    "predictions_directory" : "/opt/predictions/phoenix",
     "user" : "neo4j",
     "password" : "aoeuI444",
     "database_lags" : 2,
