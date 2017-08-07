@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import datetime
 import itertools
 import random
+import pandas as pd
 
 #
 # user settings
@@ -23,6 +24,8 @@ end = datetime.datetime(2007, 12, 31)
 plot_directory = '/Users/emily/Desktop/stocks'
 order = 10
 scan_end_point_only = False
+ratio_of_CD_to_look_ahead = 1.0
+max_index_range = int(round(365. / 2.))
 
 #
 # load time series
@@ -34,7 +37,8 @@ with open(quote_directory + '/' + symbol + '.pickle') as f:
 # narrow down window
 #
 range_finder = [x >= start and x <= end for x in ts.index]
-ts_narrow = ts.ix[range_finder].copy()
+#ts_narrow = ts.ix[range_finder].copy()
+ts_narrow = ts
 
 #
 # find relative extrema
@@ -102,6 +106,12 @@ for t in test:
 permutations_stage_2 = []
 for p in permutations:
     if not False in [y > x for x, y in zip(p[0:-1], p[1:])]:
+
+        # check index range
+        if p[-1] - p[0] > max_index_range:
+            continue
+
+
         permutations_stage_2.append(p)
 
 permutations_stage_3 = []
@@ -125,27 +135,49 @@ def retracement_ratio(A, B, C):
 #
 # compute ratios
 #
+with_look_ahead = []
+last_index = len(ts_narrow) - 1
 for p in permutations_stage_3:
     values = [ts_narrow[i] for i in p]
     diff = [y - x for x, y in zip(values[0:-1], values[1:])]
-    nearest_ratios = [retracement_ratio(A, B, C) for A, B, C in zip(values[0:-2], values[1:-1], values[2:])]
 
-    ratio_CD_of_XA = diff[-1] / diff[0]
+    nearest_ratios = [abs(retracement_ratio(A, B, C)) for A, B, C in zip(values[0:-2], values[1:-1], values[2:])]
+    ratio_CD_of_XA = abs(diff[-1] / diff[0])
 
-    #print
-    #print values
-    #print diff
-    #print nearest_ratios
-    #print ratio_CD_of_XA
+    time_diff_XA = p[1] - p[0]
+    time_diff_AB = p[2] - p[1]
+    time_diff_BC = p[3] - p[2]
+    time_diff_CD = p[4] - p[3]
+    time_diff_XB = p[2] - p[0]
+    time_diff_BD = p[4] - p[2]
+    time_diff_ratio_XA_AB = float(time_diff_XA) / float(time_diff_AB)
+    time_diff_ratio_BC_CD = float(time_diff_BC) / float(time_diff_CD)
+    time_diff_ratio_XB_BD = float(time_diff_XB) / float(time_diff_BD)
 
+    look_ahead_idx = int(round(ratio_of_CD_to_look_ahead * time_diff_CD)) + p[-1]
 
+    is_bull = int(np.sign(diff[0]) >= 1)
 
-# [38.900002000000001, 36.43, 41.509997999999996, 37.049999, 73.650002000000001]
-# [-2.4700020000000009, 5.0799979999999962, -4.4599989999999963, 36.600003000000001]
+    if look_ahead_idx <= last_index:
+        end_price = ts_narrow[p[-1]]
+        look_ahead_price = ts_narrow[look_ahead_idx]
+        look_ahead_date = ts_narrow.index[look_ahead_idx]
+        percent_change = 100. * (look_ahead_price - end_price) / look_ahead_price
 
-
-
-
+        with_look_ahead.append({
+                'is_bull' : is_bull,
+                'p' : p,
+                'look_ahead_price' : look_ahead_price,
+                'look_ahead_date' : look_ahead_date,
+                'percent_change' : percent_change,
+                'ratio_CD_of_XA' : ratio_CD_of_XA,
+                'ratio_AB_of_XA' : nearest_ratios[0],
+                'ratio_BC_of_AB' : nearest_ratios[1],
+                'ratio_CD_of_BC' : nearest_ratios[2],
+                'time_diff_ratio_XA_AB' : time_diff_ratio_XA_AB,
+                'time_diff_ratio_BC_CD' : time_diff_ratio_BC_CD,
+                'time_diff_ratio_XB_BD' : time_diff_ratio_XB_BD,
+                })
 
 
 #
@@ -153,7 +185,15 @@ for p in permutations_stage_3:
 #
 
 #p = random.sample(permutations_stage_3, 1)[0]
-P = permutations_stage_3[-1]
+#P = permutations_stage_3[-1]
+idx = -1
+p = with_look_ahead[idx]['p']
+look_ahead_price, look_ahead_date = with_look_ahead[idx]['look_ahead_price'], with_look_ahead[idx]['look_ahead_date']
+
+print
+pp.pprint(with_look_ahead[idx])
+print
+
 values = [ts_narrow.values[i] for i in p]
 dates = [ts_narrow.index[i] for i in p]
 pattern_values = [values[i] for i in [0, 2, 4, 2, 1, 3]]
@@ -164,6 +204,7 @@ plt.plot(ts_narrow.index, list(ts_narrow))
 plt.plot(pattern_dates, pattern_values, color='lightgray')
 plt.plot(dates, values, color='purple')
 plt.plot(peaks_and_valleys_dates, peaks_and_valleys_values, '.', color='green', ms=20)
+plt.plot(look_ahead_date, look_ahead_price, '.', color='red', ms=20)
 plt.title('Emily\'s Harmonic Scanner\n' + symbol + ' Share Price', fontsize=18)
 plt.xlabel('Date')
 plt.ylabel('Price (USD)')
@@ -171,3 +212,16 @@ plt.savefig(plot_directory + '/ts_harmonic.png')
 plt.close()
 
 
+#
+#
+#
+for la in with_look_ahead:
+    del(la['p'])
+    del(la['look_ahead_date'])
+    del(la['look_ahead_price'])
+
+
+
+
+df = pd.DataFrame(with_look_ahead)
+df.to_csv('data_for_regression.csv', index=False)
