@@ -13,7 +13,7 @@ app.controller('phoenix_model_info_controller', ['$scope', '$http', function($sc
     */
     $scope.data = [];
     $scope.have_data = false;
-    var url = 'http://35.160.51.97:8080/phoenix/modelreport'
+    var url = 'modelreport'
 
     /*
       call for data

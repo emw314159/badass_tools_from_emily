@@ -7,7 +7,7 @@ app.controller('phoenix_controller', ['$scope', '$http', function($scope, $http)
     */
     $scope.data = [];
     $scope.have_data = false;
-    var url = 'http://35.160.51.97:8080/phoenix/report'
+    var url = 'report'
 
     /*
       call for data
