@@ -74,13 +74,12 @@ def report(request):
     #
     # load yesterday's date
     #
-    with open('/home/ec2-user/predictions/phoenix/end.pickle') as f:
+    with open('/opt/predictions/phoenix/end.pickle') as f:
         end = pickle.load(f)
 
     #
     # load predictions
     #
-    #df = pd.read_csv('/home/ec2-user/predictions/phoenix/predictions.csv')
     df = pd.read_csv('/opt/predictions/phoenix/predictions.csv')
     
     #
