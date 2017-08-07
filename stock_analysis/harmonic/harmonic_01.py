@@ -15,13 +15,13 @@ import random
 #
 # user settings
 #
-random.seed(2)
+random.seed(4)
 symbol = 'AMZN'
 quote_directory = '/Users/emily/data/quote_data'
 start = datetime.datetime(2007, 1, 1)
 end = datetime.datetime(2007, 12, 31)
 plot_directory = '/Users/emily/Desktop/stocks'
-order = 5
+order = 10
 scan_end_point_only = False
 
 #
@@ -50,7 +50,8 @@ peaks_and_valleys_idx.sort()
 peaks_and_valleys_idx = peaks_and_valleys_idx[1:-1]
 
 # add last point
-peaks_and_valleys_idx.append(len(ts_narrow) - 1)
+if scan_end_point_only:
+    peaks_and_valleys_idx.append(len(ts_narrow) - 1)
 
 peaks_and_valleys_values = [ts_narrow.values[i] for i in peaks_and_valleys_idx]
 peaks_and_valleys_dates = [ts_narrow.index[i] for i in peaks_and_valleys_idx]
@@ -151,8 +152,8 @@ for p in permutations_stage_3:
 # plot time series
 #
 
-p = random.sample(permutations_stage_3, 1)[0]
-#P = permutations_stage_3[-1]
+#p = random.sample(permutations_stage_3, 1)[0]
+P = permutations_stage_3[-1]
 values = [ts_narrow.values[i] for i in p]
 dates = [ts_narrow.index[i] for i in p]
 pattern_values = [values[i] for i in [0, 2, 4, 2, 1, 3]]
@@ -163,6 +164,9 @@ plt.plot(ts_narrow.index, list(ts_narrow))
 plt.plot(pattern_dates, pattern_values, color='lightgray')
 plt.plot(dates, values, color='purple')
 plt.plot(peaks_and_valleys_dates, peaks_and_valleys_values, '.', color='green', ms=20)
+plt.title('Emily\'s Harmonic Scanner\n' + symbol + ' Share Price', fontsize=18)
+plt.xlabel('Date')
+plt.ylabel('Price (USD)')
 plt.savefig(plot_directory + '/ts_harmonic.png')
 plt.close()
 
