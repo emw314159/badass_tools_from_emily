@@ -72,21 +72,22 @@ def report(request):
     data = {}
 
     #
+    # load yesterday's date
+    #
+    with open('/home/ec2-user/predictions/phoenix/end.pickle') as f:
+        end = pickle.load(f)
+
+    #
     # load predictions
     #
-    df = pd.read_csv('/home/ec2-user/predictions/phoenix/predictions.csv')
+    #df = pd.read_csv('/home/ec2-user/predictions/phoenix/predictions.csv')
+    df = pd.read_csv('/opt/predictions/phoenix/predictions.csv')
     
     #
     # organize the predictions for display
     #
     data['buy'] = get_and_sort_given_predictions(df, 'prediction_buy')
     data['short'] = get_and_sort_given_predictions(df, 'prediction_short')
-
-    #
-    # load yesterday's date
-    #
-    with open('/home/ec2-user/predictions/phoenix/end.pickle') as f:
-        end = pickle.load(f)
 
     #
     # compute trading day

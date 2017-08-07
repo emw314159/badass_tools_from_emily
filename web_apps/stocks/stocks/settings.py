@@ -26,7 +26,8 @@ SECRET_KEY = '7w)w#)9w)@n2mshzti1@gbxsenh^^meh*69_lubb9zd1tv4%-4'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '35.160.51.97',
+    'www.whole-systems-enterprises.com',
+    'whole-systems-enterprises.com',
 ]
 
 
@@ -125,3 +126,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = '/opt/badass_tools_from_emily/web_apps/stocks/static'
+
