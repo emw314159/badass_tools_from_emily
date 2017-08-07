@@ -6,7 +6,6 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from django.template import loader
 from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_exempt
 
 import pandas as pd
 import pickle
@@ -67,7 +66,6 @@ def get_and_sort_given_predictions(df, column):
 #
 # view to return data
 #
-@csrf_exempt
 @api_view(['POST'])
 def report(request):
 
@@ -159,7 +157,6 @@ def get_major_ROC_points(roc):
 #
 # view to return model details
 #
-@csrf_exempt
 @api_view(['POST'])
 def model_report(request):
 
