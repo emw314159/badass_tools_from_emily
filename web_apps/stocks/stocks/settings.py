@@ -26,7 +26,7 @@ SECRET_KEY = '7w)w#)9w)@n2mshzti1@gbxsenh^^meh*69_lubb9zd1tv4%-4'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'ec2-35-160-25-103.us-west-2.compute.amazonaws.com',
+    '35.160.51.97',
 ]
 
 
