@@ -165,15 +165,15 @@ def model_report(request):
     #
     # load rates and thresholds
     #
-    with open('/home/ec2-user/models/phoenix/FULL_SVM_BUY_fpr_tpr_thresholds.pickle') as f:
+    with open('/opt/models/phoenix/FULL_SVM_BUY_fpr_tpr_thresholds.pickle') as f:
         buy = pickle.load(f)
-    with open('/home/ec2-user/models/phoenix/FULL_SVM_SHORT_fpr_tpr_thresholds.pickle') as f:
+    with open('/opt/models/phoenix/FULL_SVM_SHORT_fpr_tpr_thresholds.pickle') as f:
         short = pickle.load(f)
 
     #
     # load model version
     #
-    with open('/home/ec2-user/models/phoenix/version.json') as f:
+    with open('/opt/models/phoenix/version.json') as f:
         version = json.load(f)
     
 
