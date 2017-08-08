@@ -13,7 +13,7 @@ import itertools
 import random
 import pandas as pd
 from multiprocessing import Process, Pool
-
+import sys
 
 
 
@@ -94,7 +94,7 @@ def compute_ratios(p, ts_narrow, ratio_of_CD_to_look_ahead, last_index):
 #
 def stage_1(args):
 
-    t, ts_narrow, max_index_range, scan_end_point_only, first, second, ratio_of_CD_to_look_ahead, last_idx = args
+    t, ts_narrow, max_index_range, scan_end_point_only, first, second, ratio_of_CD_to_look_ahead, last_idx, symbol = args
     dict_for_dataframe = {}
 
     # check max index range
@@ -129,6 +129,7 @@ def stage_1(args):
         return False, t, dict_for_dataframe
 
     # everything checks out
+    dict_for_dataframe['symbol'] = symbol
     return True, t, dict_for_dataframe
 
 #
@@ -140,167 +141,147 @@ if __name__ == "__main__":
     # user settings
     #
     random.seed(4)
-    symbol = 'AMZN'
+    symbol = sys.argv[1]
     quote_directory = '/Users/emily/data/quote_data'
     start = datetime.datetime(2007, 1, 1)
     end = datetime.datetime(2007, 12, 31)
     plot_directory = '/Users/emily/Desktop/stocks'
     order = 10
     scan_end_point_only = False
-    ratio_of_CD_to_look_ahead = [0.5, 0.75, 1.0, 1.25, 1.5]
+    ratio_of_CD_to_look_ahead = [0.1, 0.25, 0.35, 0.5, 0.75, 1.0, 1.25, 1.5]
     max_index_range = int(round(365. / 2.))
     number_of_workers_in_pool = 20
     chunksize = 1000
+    do_it = False
+    analyze_it = True
 
-    #
-    # prepare multiprocessing
-    #
-    pool = Pool(processes=number_of_workers_in_pool)
+    if do_it:
 
-    #
-    # load time series
-    #
-    with open(quote_directory + '/' + symbol + '.pickle') as f:
-        ts = pickle.load(f)['Adj Close']
+        #
+        # prepare multiprocessing
+        #
+        pool = Pool(processes=number_of_workers_in_pool)
 
-    #
-    # narrow down window
-    #
-    range_finder = [x >= start and x <= end for x in ts.index]
-    #ts_narrow = ts.ix[range_finder].copy()
-    ts_narrow = ts
+        #
+        # load time series
+        #
+        with open(quote_directory + '/' + symbol + '.pickle') as f:
+            ts = pickle.load(f)['Adj Close']
 
-    #
-    # find relative extrema
-    #
-    a = datetime.datetime.now()
-    peaks = argrelextrema(ts_narrow.values, np.greater, order=order)[0]
-    valleys = argrelextrema(ts_narrow.values, np.less, order=order)[0]
-    peaks_and_valleys_idx = []
-    peaks_and_valleys_idx.extend(list(peaks))
-    peaks_and_valleys_idx.extend(list(valleys))
-    peaks_and_valleys_idx.sort()
+        #
+        # narrow down window
+        #
+        range_finder = [x >= start and x <= end for x in ts.index]
+        #ts_narrow = ts.ix[range_finder].copy()
+        ts_narrow = ts
 
-    # cut ends
-    peaks_and_valleys_idx = peaks_and_valleys_idx[1:-1]
+        #
+        # find relative extrema
+        #
+        a = datetime.datetime.now()
+        peaks = argrelextrema(ts_narrow.values, np.greater, order=order)[0]
+        valleys = argrelextrema(ts_narrow.values, np.less, order=order)[0]
+        peaks_and_valleys_idx = []
+        peaks_and_valleys_idx.extend(list(peaks))
+        peaks_and_valleys_idx.extend(list(valleys))
+        peaks_and_valleys_idx.sort()
 
-    # add last point
-    if scan_end_point_only:
-        peaks_and_valleys_idx.append(len(ts_narrow) - 1)
+        # cut ends
+        peaks_and_valleys_idx = peaks_and_valleys_idx[1:-1]
 
-    peaks_and_valleys_values = [ts_narrow.values[i] for i in peaks_and_valleys_idx]
-    peaks_and_valleys_dates = [ts_narrow.index[i] for i in peaks_and_valleys_idx]
+        # add last point
+        if scan_end_point_only:
+            peaks_and_valleys_idx.append(len(ts_narrow) - 1)
 
-    #
-    # decide where to start 
-    #
-    if peaks[0] < valleys[0]:
-        first = peaks
-        second = valleys
-    else:
-        first = valleys
-        second = peaks
+        peaks_and_valleys_values = [ts_narrow.values[i] for i in peaks_and_valleys_idx]
+        peaks_and_valleys_dates = [ts_narrow.index[i] for i in peaks_and_valleys_idx]
 
-    b = datetime.datetime.now()
-    print b - a 
+        #
+        # decide where to start 
+        #
+        if peaks[0] < valleys[0]:
+            first = peaks
+            second = valleys
+        else:
+            first = valleys
+            second = peaks
 
-
-
-    #
-    # find candidate patterns without regard to ratios
-    #
-
-    last_idx = len(ts_narrow) - 1
-    permutations = []
-
-    print 'Permutations...'
-    a = datetime.datetime.now()
-    test = itertools.permutations(peaks_and_valleys_idx, 5)
-    b = datetime.datetime.now()
-    print b - a 
+        b = datetime.datetime.now()
+        print b - a 
 
 
 
+        #
+        # find candidate patterns without regard to ratios
+        #
 
-    print 'Stage 1...'
-    a = datetime.datetime.now()
-    data_list = []
-    for t in test:
-        data = (t, ts_narrow, max_index_range, scan_end_point_only, first, second, ratio_of_CD_to_look_ahead, last_idx)
-        data_list.append(data)
-
-    #it = pool.apply_async(stage_1, data)
-       #async_results.append(it)
-
-    it = pool.imap_unordered(stage_1, data_list, chunksize=chunksize)
-
-    final = []
-    permutations = []
-
-    current = it.next()
-    count = 0
-    while current:
-        results = current
-        result, t, dict_for_dataframe = results
-        if result:
-            permutations.append(list(t))
-            final.append(dict_for_dataframe)
-
-            count += 1
-            if count >= 5:
-                df = pd.DataFrame(final)
-                df.to_csv('TEMP_data_for_regression.csv', index=False)
-                count = 0
-
-        try:
-            current = it.next()
-        except:
-            break
-
-    df = pd.DataFrame(final)
-    df.to_csv('TEMP_data_for_regression.csv', index=False)
-    df.to_csv('data_for_regression.csv', index=False)
+        last_idx = len(ts_narrow) - 1
 
 
-    b = datetime.datetime.now()
-    print b - a 
+        data_list = []
+        data_str_dict = {}
 
-#     print 'Stage 2...'
-#     a = datetime.datetime.now()
-#     permutations_stage_2 = []
-#     for p in permutations:
-#         if not False in [y > x for x, y in zip(p[0:-1], p[1:])]:
-#             permutations_stage_2.append(p)
-#     b = datetime.datetime.now()
-#     print b - a 
+        for i in peaks_and_valleys_idx[0:-5]:
+            j_list = [x for x in peaks_and_valleys_idx if x >= i and x <= max_index_range + i]
+            test = itertools.permutations(j_list, 5)
+            for t in test:
+                str_t = '_'.join([str(x) for x in t])
+                if data_str_dict.has_key(str_t):
+                    continue
+                data_str_dict[str_t] = None
 
-#     print 'Stage 3...'
-#     a = datetime.datetime.now()
-#     permutations_stage_3 = []
-#     for p in permutations_stage_2:
-#         test_list = [which_list(i, first, second) for i in p]
-#         test = [y != x for x, y in zip(test_list[0:-1], test_list[1:])]
-#         if not False in test:
-#             permutations_stage_3.append(p)
+                data = (t, ts_narrow, max_index_range, scan_end_point_only, first, second, ratio_of_CD_to_look_ahead, last_idx, symbol)
+                data_list.append(data)
 
-#     b = datetime.datetime.now()
-#     print b - a 
+
+
+
+        it = pool.imap_unordered(stage_1, data_list, chunksize=chunksize)
+
+        final = []
+        permutations = []
+
+        current = it.next()
+        count = 0
+        while current:
+            results = current
+            result, t, dict_for_dataframe = results
+            if result:
+                permutations.append(list(t))
+                final.append(dict_for_dataframe)
+
+                count += 1
+                if count >= 5:
+                    df = pd.DataFrame(final)
+                    df.to_csv('TEMP_data_for_regression_' + symbol + '.csv', index=False)
+                    count = 0
+
+            try:
+                current = it.next()
+            except:
+                break
+
+        df = pd.DataFrame(final)
+        df.to_csv('TEMP_data_for_regression_' + symbol + '.csv', index=False)
+        df.to_csv('data_for_regression_' + symbol + '.csv', index=False)
+
+
+        b = datetime.datetime.now()
+        print b - a 
 
 
 
 
 
+    if analyze_it:
+        df = pd.read_csv('data_for_regression.csv')
 
+#percent_change_100 + percent_change_125 + percent_change_150 + percent_change_50 + percent_change_75 + 
 
-    #
-    #
-    #
+        formula = 'percent_change_50 ~ is_bull + ratio_AB_of_XA + ratio_BC_of_AB + ratio_CD_of_BC + ratio_CD_of_XA + time_diff_XD + time_diff_ratio_BC_CD + time_diff_ratio_XA_AB + time_diff_ratio_XB_BD'
 
-
-    pp.pprint(final)
-
-
-
-
-    df = pd.DataFrame(final)
-    df.to_csv('data_for_regression.csv', index=False)
+        import statsmodels.formula.api as smf
+        results = smf.ols(formula=formula, data=df).fit()
+        print
+        print results.summary()
+        print
