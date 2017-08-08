@@ -299,9 +299,9 @@ if __name__ == "__main__":
             if result:
                 permutations.append(list(t))
                 final.extend(dict_for_dataframe)
-
+                
                 count += 1
-                if count >= 5:
+                if count >= 50:
                     df = pd.DataFrame(final)
                     df.to_csv('TEMP_data_for_regression_' + symbol + '.csv', index=False)
                     count = 0
@@ -314,6 +314,16 @@ if __name__ == "__main__":
         df = pd.DataFrame(final)
         df.to_csv('TEMP_data_for_regression_' + symbol + '.csv', index=False)
         df.to_csv('data_for_regression_' + symbol + '.csv', index=False)
+
+
+
+        #
+        # plot histogram
+        #
+        plt.figure()
+        plt.hist(df['percent_change_50'])
+        plt.savefig(plot_directory + '/HIST_percent_change.png')
+        plt.close()
 
 
         b = datetime.datetime.now()
@@ -343,8 +353,8 @@ if __name__ == "__main__":
         #
         # load data
         #
-        df = pd.read_csv('data_for_regression_' + symbol + '.csv')
-        df['y'] = df[percent_change_to_use]
+        df = pd.read_csv('TEMP_data_for_regression_' + symbol + '.csv')
+        df['y'] = abs(df[percent_change_to_use])
         
 
         #
@@ -357,9 +367,9 @@ if __name__ == "__main__":
         formula += ' + time_diff_ratio_BC_CD * time_diff_ratio_XA_AB * time_diff_ratio_XB_BD * time_diff_XD'
         formula += ' + percent_diff_open_to_close * percent_diff_low_to_high * percent_diff_close_to_high * percent_diff_C_to_D'
 
-        #formula += ' + pow(percent_diff_C_to_D, 3.)'
-        #formula += ' + pow(time_diff_XD, 2.)'
-        #formula += ' + is_bull * percent_diff_C_to_D'
+        formula += ' + pow(percent_diff_C_to_D, 3.)'
+        formula += ' + pow(time_diff_XD, 2.)'
+        formula += ' + is_bull * percent_diff_C_to_D'
 
         factor_options = {}
 
