@@ -152,7 +152,7 @@ if __name__ == "__main__":
     max_index_range = int(round(365. / 2.))
     number_of_workers_in_pool = 20
     chunksize = 1000
-    do_it = False
+    do_it = True
     analyze_it = True
 
     if do_it:
