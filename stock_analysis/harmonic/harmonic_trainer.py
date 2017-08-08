@@ -54,6 +54,20 @@ def compute_ratios(p, ts_narrow, ts_full_narrow, ratio_of_CD_to_look_ahead, last
     if last_point != last_point_in_series:
         for p_end in range(p[-1] + 1, last_point_in_extention + 1):
 
+            pi = [x for x in p]
+            pi.append(p_end)
+
+            values = [ts_narrow[i] for i in pi]
+            diff = [y - x for x, y in zip(values[0:-1], values[1:])]
+
+            # figure out a way to speed this up
+            diff_sign = [int(np.sign(y - x)) for x, y in zip(values[0:-1], values[1:])]
+            diff_test = [y != x for x, y in zip(diff_sign[0:-1], diff_sign[1:])]
+            if False in diff_test:
+                continue
+
+
+
             open = ts_full_narrow.ix[p_end,:]['Open']
             close = ts_full_narrow.ix[p_end,:]['Close']
             low = ts_full_narrow.ix[p_end,:]['Low']
@@ -63,11 +77,7 @@ def compute_ratios(p, ts_narrow, ts_full_narrow, ratio_of_CD_to_look_ahead, last
             percent_diff_close_to_high = 100. * (high - close) / close
             
 
-            pi = [x for x in p]
-            pi.append(p_end)
 
-            values = [ts_narrow[i] for i in pi]
-            diff = [y - x for x, y in zip(values[0:-1], values[1:])]
 
             nearest_ratios = [abs(retracement_ratio(A, B, C)) for A, B, C in zip(values[0:-2], values[1:-1], values[2:])]
             ratio_CD_of_XA = abs(diff[-1] / diff[0])
@@ -189,8 +199,8 @@ if __name__ == "__main__":
 
     number_of_workers_in_pool = 20
     chunksize = 1000
-    do_it = False
-    analyze_it = True
+    do_it = True
+    analyze_it = False
 
     if do_it:
 
