@@ -199,8 +199,8 @@ if __name__ == "__main__":
 
     number_of_workers_in_pool = 20
     chunksize = 1000
-    do_it = True
-    analyze_it = False
+    do_it = False
+    analyze_it = True
 
     if do_it:
 
@@ -317,14 +317,6 @@ if __name__ == "__main__":
 
 
 
-        #
-        # plot histogram
-        #
-        plt.figure()
-        plt.hist(df['percent_change_50'])
-        plt.savefig(plot_directory + '/HIST_percent_change.png')
-        plt.close()
-
 
         b = datetime.datetime.now()
         print b - a 
@@ -343,18 +335,21 @@ if __name__ == "__main__":
         #
         import badass_tools_from_emily.machine_learning.machine_learning as ml
         import statsmodels.formula.api as smf
+        from numpy import percentile, mean, median
 
         #
         # user settings
         #
-        percent_change_to_use = 'percent_change_50'
-        number_of_vfold_to_run = 10
+        percent_change_to_use = 'percent_change_100'
+        number_of_vfold_to_run = 2
+        good_percentile_cutoff = 60
+        bad_percentile_cutoff = 50
 
         #
         # load data
         #
         df = pd.read_csv('TEMP_data_for_regression_' + symbol + '.csv')
-        df['y'] = abs(df[percent_change_to_use])
+        df['y'] = df[percent_change_to_use]
         
 
         #
@@ -362,29 +357,172 @@ if __name__ == "__main__":
         #
         formula = 'y ~ is_bull + ratio_AB_of_XA + ratio_BC_of_AB + ratio_CD_of_BC + ratio_CD_of_XA + time_diff_XD + time_diff_ratio_BC_CD + time_diff_ratio_XA_AB + time_diff_ratio_XB_BD + percent_diff_open_to_close + percent_diff_low_to_high + percent_diff_close_to_high + percent_diff_C_to_D'
 
-        formula += ' + pow(percent_diff_C_to_D, 2.)'
-        formula += ' + ratio_AB_of_XA * ratio_BC_of_AB * ratio_CD_of_BC * ratio_CD_of_XA'
-        formula += ' + time_diff_ratio_BC_CD * time_diff_ratio_XA_AB * time_diff_ratio_XB_BD * time_diff_XD'
-        formula += ' + percent_diff_open_to_close * percent_diff_low_to_high * percent_diff_close_to_high * percent_diff_C_to_D'
 
-        formula += ' + pow(percent_diff_C_to_D, 3.)'
-        formula += ' + pow(time_diff_XD, 2.)'
-        formula += ' + is_bull * percent_diff_C_to_D'
+        df['ratio_AB_of_XA'] = [abs(x) for x in df['ratio_AB_of_XA']]
+        df['ratio_BC_of_AB'] = [abs(x) for x in df['ratio_BC_of_AB']]
+        df['ratio_CD_of_BC'] = [abs(x) for x in df['ratio_CD_of_BC']]
+        df['ratio_CD_of_XA'] = [abs(x) for x in df['ratio_CD_of_XA']]
+
+        df['I38'] = [x ** 2. for x in df['ratio_AB_of_XA']]
+        df['I39'] = [x ** 2. for x in df['ratio_BC_of_AB']]
+        df['I40'] = [x ** 2. for x in df['ratio_CD_of_BC']]
+        df['I41'] = [x ** 2. for x in df['ratio_CD_of_XA']]
+
+
+        df['I01'] = df['percent_diff_C_to_D'] ** 2.
+        df['I02'] = df['ratio_AB_of_XA'] * df['ratio_BC_of_AB']
+        df['I03'] = df['ratio_AB_of_XA'] * df['ratio_CD_of_BC']
+        df['I04'] = df['ratio_BC_of_AB'] * df['ratio_CD_of_BC']
+        df['I05'] = df['ratio_AB_of_XA'] * df['ratio_BC_of_AB'] * df['ratio_CD_of_BC']
+        df['I06'] = df['ratio_AB_of_XA'] * df['ratio_CD_of_XA']
+        df['I07'] = df['ratio_BC_of_AB'] * df['ratio_CD_of_XA']
+        df['I08'] = df['ratio_AB_of_XA'] * df['ratio_BC_of_AB'] * df['ratio_CD_of_XA']
+        df['I09'] = df['ratio_CD_of_BC'] * df['ratio_CD_of_XA']
+        df['I10'] = df['ratio_AB_of_XA'] * df['ratio_CD_of_BC'] * df['ratio_CD_of_XA']
+        df['I11'] = df['ratio_BC_of_AB'] * df['ratio_CD_of_BC'] * df['ratio_CD_of_XA']
+        df['I12'] = df['ratio_AB_of_XA'] * df['ratio_BC_of_AB'] * df['ratio_CD_of_BC'] * df['ratio_CD_of_XA']
+        df['I13'] = df['time_diff_ratio_BC_CD'] * df['time_diff_ratio_XA_AB']
+        df['I14'] = df['time_diff_ratio_BC_CD'] * df['time_diff_ratio_XB_BD']
+        df['I15'] = df['time_diff_ratio_XA_AB'] * df['time_diff_ratio_XB_BD']
+        df['I16'] = df['time_diff_ratio_BC_CD'] * df['time_diff_ratio_XA_AB'] * df['time_diff_ratio_XB_BD']
+        df['I17'] = df['time_diff_ratio_BC_CD'] * df['time_diff_XD']
+        df['I18'] = df['time_diff_ratio_XA_AB'] * df['time_diff_XD']
+        df['I19'] = df['time_diff_ratio_BC_CD'] * df['time_diff_ratio_XA_AB'] * df['time_diff_XD']
+        df['I20'] = df['time_diff_ratio_XB_BD'] * df['time_diff_XD']
+        df['I21'] = df['time_diff_ratio_BC_CD'] * df['time_diff_ratio_XB_BD'] * df['time_diff_XD']
+        df['I22'] = df['time_diff_ratio_XA_AB'] * df['time_diff_ratio_XB_BD'] * df['time_diff_XD']
+        df['I23'] = df['time_diff_ratio_BC_CD'] * df['time_diff_ratio_XA_AB'] * df['time_diff_ratio_XB_BD'] * df['time_diff_XD']
+        df['I24'] = df['percent_diff_open_to_close'] * df['percent_diff_low_to_high']
+        df['I25'] = df['percent_diff_open_to_close'] * df['percent_diff_close_to_high']
+        df['I26'] = df['percent_diff_low_to_high'] * df['percent_diff_close_to_high']
+        df['I27'] = df['percent_diff_open_to_close'] * df['percent_diff_low_to_high'] * df['percent_diff_close_to_high']
+        df['I28'] = df['percent_diff_open_to_close'] * df['percent_diff_C_to_D']
+        df['I29'] = df['percent_diff_low_to_high'] * df['percent_diff_C_to_D']
+        df['I30'] = df['percent_diff_open_to_close'] * df['percent_diff_low_to_high'] * df['percent_diff_C_to_D']
+        df['I31'] = df['percent_diff_close_to_high'] * df['percent_diff_C_to_D']
+        df['I32'] = df['percent_diff_open_to_close'] * df['percent_diff_close_to_high'] * df['percent_diff_C_to_D']
+        df['I33'] = df['percent_diff_low_to_high'] * df['percent_diff_close_to_high'] * df['percent_diff_C_to_D']
+        df['I34'] = df['percent_diff_open_to_close'] * df['percent_diff_low_to_high'] * df['percent_diff_close_to_high'] * df['percent_diff_C_to_D']
+        df['I35'] = df['percent_diff_C_to_D'] ** 3.
+        df['I36'] = df['time_diff_XD'] ** 2.
+        df['I37'] = df['is_bull'] * df['percent_diff_C_to_D']
+
+        for i in range(1, 42):
+            str_i = str(i)
+            if len(str_i) == 1:
+                str_i = '0' + str_i
+            str_i = 'I' + str_i
+            formula += ' + ' + str_i
+
+
+
+        #formula += ' + pow(percent_diff_C_to_D, 2.)'
+        #formula += ' + ratio_AB_of_XA * ratio_BC_of_AB * ratio_CD_of_BC * ratio_CD_of_XA'
+        #formula += ' + time_diff_ratio_BC_CD * time_diff_ratio_XA_AB * time_diff_ratio_XB_BD * time_diff_XD'
+        #formula += ' + percent_diff_open_to_close * percent_diff_low_to_high * percent_diff_close_to_high * percent_diff_C_to_D'
+
+        #formula += ' + pow(percent_diff_C_to_D, 3.)'
+        #formula += ' + pow(time_diff_XD, 2.)'
+        #formula += ' + is_bull * percent_diff_C_to_D'
 
         factor_options = {}
+
+
+
+
+
+#         #
+#         # percentiles
+#         #
+#         print percentile(df['y'], [0., 25., 50., 75., 100.])
+#         good_cutoff = percentile(df['y'], good_percentile_cutoff)
+#         bad_cutoff = percentile(df['y'], bad_percentile_cutoff)
+
+
+        #
+        # only look at "bull" patterns
+        #
+        is_bull_list = [x == 1 for x in df['is_bull']]
+        df_bull = df.ix[is_bull_list, :].copy()
+        #formula = formula.replace('is_bull + ', '')
+
+        #
+        # plot histogram
+        #
+        plt.figure()
+        plt.hist(list(df_bull['y']))
+        plt.savefig(plot_directory + '/HIST_percent_change.png')
+        plt.close()
+
+        print median(df_bull['y'])
+
 
         #
         # basic OLS regression
         #
-        results = smf.ols(formula=formula, data=df).fit()
+        model = smf.ols(formula=formula, data=df_bull).fit()
         print
-        print results.summary()
+        print model.summary()
         print
 
-#         #
-#         # cross-validate
-#         #
-#         y, X = ml.categorize(formula, factor_options, df)
-#         results = ml.v_fold(ml.linear_wrapper, y, X, number_of_vfold_to_run, classification=False)
-#         pp.pprint(results)
+
+
+
+#         is_range_list = [x <= bad_cutoff or x >= good_cutoff for x in df_bull['y']]
+#         df_range = df_bull.ix[is_range_list, :].copy()
+#         y_bin = []
+#         for y in df_bull['y']:
+#             if y >= good_cutoff:
+#                 y_bin.append(1)
+#             if y <= bad_cutoff:
+#                 y_bin.append(0)
+#         df_range['y_bin'] = y_bin
+
+#         formula_range = formula.replace('y ~', 'y_bin ~')
+
+
+        #
+        # cross-validate
+        #
+        y, X = ml.categorize(formula, factor_options, df_bull)
+        results = ml.v_fold(ml.linear_wrapper, y, X, number_of_vfold_to_run, classification=False)
+        pp.pprint(results['spearmanr_list'])
+
+        #
+        # plot a random example
+        #
+        xx = results['y_testing_list'][0]
+        yy = results['y_predicted_list'][0]
+        plt.figure()
+        plt.plot(xx, yy, '.')
+        plt.xlabel('Known')
+        plt.ylabel('Predicted')
+        plt.title('Predicted vs. Known')
+        plt.savefig(plot_directory + '/predicted_vs_known.png')
+        plt.close()
+
+        #
+        #
+        #
+        cutoff = 10.
+        good_calls = []
+        bad_calls = []
+        calls = []
+        for i, j in zip(xx, yy):
+            if j >= cutoff:
+                calls.append(j)
+                if i >= 0.:
+                    good_calls.append(j)
+                else:
+                    bad_calls.append(j)
+        print
+        print float(len(good_calls)) / float(len(calls))
+        print float(len(bad_calls)) / float(len(calls))
+
+        #
+        # write current model
+        #
+        df_to_R = X.copy()
+        df_to_R['y'] = y
+        df_to_R.to_csv('to_R.csv', index=False)
 
